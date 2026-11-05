@@ -133,17 +133,44 @@ test("入力エラー: 未来の日付、未入力", async ({ page }) => {
   await expect(page.getByRole("alert")).toContainText("実在");
 });
 
-test("端末保存は選んだときだけで、削除できる", async ({ page }) => {
+test("チェックしたときだけ保存し、次回は入力済みで開き、外すと消える", async ({ page }) => {
   await toResults(page, SYNTHETIC);
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
-  await page.getByRole("button", { name: "この端末に保存する" }).click();
+
+  await page.goto("./");
+  const box = page.getByLabel("入力情報をこの端末に保存する");
+  await expect(box).not.toBeChecked();
+  await fillBirth(page, SYNTHETIC);
+  await box.check();
+  await page.getByRole("button", { name: "確認へ進む" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "計算の条件を確認する" })).toBeVisible();
   expect(await page.evaluate(() => localStorage.length)).toBe(1);
+
+  await page.reload();
+  await expect(page.getByLabel("年(西暦)")).toHaveValue("2000");
+  await expect(page.getByLabel("時刻", { exact: true })).toHaveValue("12:00");
+  await expect(page.getByText("東京都千代田区")).toBeVisible();
+  await expect(box).toBeChecked();
+  await page.getByRole("button", { name: "確認へ進む" }).click();
+  await page.getByRole("button", { name: "この条件で計算する" }).click();
+  await expect(page.getByRole("link", { name: /^ライフパス 4/ })).toBeVisible();
+
   await page.goto("./");
   await page.reload();
-  await page.getByRole("button", { name: "読み込む" }).click();
-  await expect(page.getByLabel("年(西暦)")).toHaveValue("2000");
-  await page.getByRole("button", { name: "削除する" }).click();
+  await box.uncheck();
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
+  await page.reload();
+  await expect(page.getByLabel("年(西暦)")).toHaveValue("");
+});
+
+test("時刻不明と出生地不明の入力も保存できる", async ({ page }) => {
+  await page.goto("./");
+  await fillBirth(page, { y: "2000", m: "1", d: "1", accuracy: "不明" });
+  await page.getByLabel("入力情報をこの端末に保存する").check();
+  await page.getByRole("button", { name: "確認へ進む" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "計算の条件を確認する" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("不明", { exact: true })).toBeChecked();
 });
 
 test("読み込み直すと入力も結果も残らない", async ({ page }) => {

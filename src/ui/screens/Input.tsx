@@ -5,7 +5,7 @@ import { japanExtraIndex, japanIndex, worldIndex } from "../../places/loader";
 import { searchPlaces, type PlaceCandidate } from "../../places/search";
 import type { BirthDraft } from "../../time/resolve";
 import { call, UserError } from "../client";
-import { clearSaved, readSaved } from "../storage";
+import { clearSaved, readSaved, writeSaved } from "../storage";
 
 type PlaceMode = "japan" | "world" | "manual" | "unknown";
 export interface InputState {
@@ -26,8 +26,10 @@ export function fromSaved(d: BirthDraft, label: string): InputState {
 }
 
 export function InputScreen({ initial, busy, onSubmit }: { initial: InputState | null; busy: boolean; onSubmit: (d: BirthDraft, label: string, s: InputState) => void }) {
-  const [s, setS] = useState<InputState>(initial ?? EMPTY);
-  const [saved, setSaved] = useState(readSaved);
+  // 保存した入力があれば最初から入れておく。チェックを外すと保存を消す
+  const [saved] = useState(readSaved);
+  const [s, setS] = useState<InputState>(initial ?? (saved ? fromSaved(saved.draft, saved.placeLabel) : EMPTY));
+  const [save, setSave] = useState(!!saved);
   const [message, setMessage] = useState("");
   const set = (patch: Partial<InputState>) => setS((v) => ({ ...v, ...patch }));
   const needsTime = s.accuracy !== "unknown";
@@ -53,6 +55,7 @@ export function InputScreen({ initial, busy, onSubmit }: { initial: InputState |
     } else if (needsTime) {
       return setMessage("出生地を候補から選んでください。わからない場合は「わからない」を選んでください。");
     }
+    if (save && !writeSaved({ draft, placeLabel: label })) setSave(false);
     onSubmit(draft, label, s);
   };
 
@@ -60,15 +63,6 @@ export function InputScreen({ initial, busy, onSubmit }: { initial: InputState |
     <form onSubmit={submit} noValidate autoComplete="off">
       <h1 tabIndex={-1}>出生情報を入力する</h1>
       <p class="lead">遺伝子易経、西洋占星術、インド占星術、数秘術の計算結果を、一度の入力で確認できます。</p>
-      {saved && (
-        <div class="panel">
-          <p>この端末に保存した入力があります。</p>
-          <div class="actions">
-            <button type="button" class="btn secondary" onClick={() => setS(fromSaved(saved.draft, saved.placeLabel))}>読み込む</button>
-            <button type="button" class="btn secondary" onClick={() => { clearSaved(); setSaved(null); }}>削除する</button>
-          </div>
-        </div>
-      )}
       <fieldset>
         <legend>生年月日</legend>
         <div class="date-row">
@@ -89,6 +83,11 @@ export function InputScreen({ initial, busy, onSubmit }: { initial: InputState |
         ) : <p class="note">時刻が不明の場合、計算できるのは数秘術のみです。正午などを仮に入れることはしません。</p>}
       </fieldset>
       {needsTime && <PlacePicker state={s} set={set} />}
+      <fieldset>
+        <legend>入力情報の保存</legend>
+        <label class="check"><input type="checkbox" checked={save} onChange={(e) => { const on = e.currentTarget.checked; setSave(on); if (!on) clearSaved(); }} />入力情報をこの端末に保存する</label>
+        <p class="note">次回から入力を省けます。保存先はこの端末の中だけで、チェックを外すと消えます。共用の端末では使わないでください。</p>
+      </fieldset>
       {message && <p class="alert" role="alert">{message}</p>}
       <div class="actions"><button class="btn primary" disabled={busy}>確認へ進む</button></div>
     </form>

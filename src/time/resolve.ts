@@ -39,8 +39,13 @@ function wallOf(draft: BirthDraft): number {
   return wallToEpoch(year, month, day, h, mi, s ?? 0);
 }
 
-/** 日本は1948〜51年の夏時間を含めて記録が確かなので対象外とする */
-const needsReview = (draft: BirthDraft): boolean => draft.date < "1970-01-01" && draft.timezone !== "Asia/Tokyo";
+/** 日本は1948〜51年の夏時間を含めて記録が確かなので対象外とする。ただし資料が食い違う1951年の終了日は例外 */
+const JAPAN_1951_END = (draft: BirthDraft): boolean =>
+  draft.timezone === "Asia/Tokyo" && (draft.date === "1951-09-08" || (draft.date === "1951-09-09" && (draft.time ?? "") < "01:00"));
+const JAPAN_1951_MESSAGE = "1951年の夏時間の終了は9月8日深夜とする資料と、9月7日で打ち切られたとする資料があります。この時刻は UTC差が1時間変わる可能性があるため、当時の記録がわかる場合は修正してください。";
+const needsReview = (draft: BirthDraft): boolean =>
+  (draft.date < "1970-01-01" && draft.timezone !== "Asia/Tokyo") || JAPAN_1951_END(draft);
+const reviewMessage = (draft: BirthDraft): string => (JAPAN_1951_END(draft) ? JAPAN_1951_MESSAGE : REVIEW_MESSAGE);
 
 export function confirmBirth(draft: BirthDraft, tz: TzData): Confirmation {
   if (!draft.time) return { status: "no_time" };
@@ -59,10 +64,10 @@ export function confirmBirth(draft: BirthDraft, tz: TzData): Confirmation {
       return { status: "ambiguous", choices, message: "時計を戻す切り替えのため、この現地時刻は2回あります。どちらかを選んでください。" };
     }
     const review = needsReview(draft);
-    return { status: "ok", time: choices[draft.fold], overridden: false, review, ...(review ? { message: REVIEW_MESSAGE } : {}) };
+    return { status: "ok", time: choices[draft.fold], overridden: false, review, ...(review ? { message: reviewMessage(draft) } : {}) };
   }
   const review = needsReview(draft);
-  return { status: "ok", time: toConfirmed(r.candidate), overridden: false, review, ...(review ? { message: REVIEW_MESSAGE } : {}) };
+  return { status: "ok", time: toConfirmed(r.candidate), overridden: false, review, ...(review ? { message: reviewMessage(draft) } : {}) };
 }
 
 /** 確認画面へ進む前の入力検証。ここでの UTC は検証専用で計算には使わない */

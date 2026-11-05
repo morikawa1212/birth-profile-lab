@@ -1,20 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useState } from "preact/hooks";
 import type { ModuleResult, ResultItem } from "../../core/types";
 import type { CalcResult } from "../../engine/worker";
 import type { NumerologyData } from "../../modules/numerology/index";
 import type { WesternData } from "../../modules/western/index";
-import type { BirthDraft } from "../../time/resolve";
 import type { ContentMap } from "../content";
 import { GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows, SUMMARY_ITEMS } from "../labels";
 import { NOT_OFFICIAL, OFFICIAL_URL } from "../site";
-import { clearSaved, readSaved, writeSaved } from "../storage";
 
 export function OfficialNote() {
   return <p class="notice">{NOT_OFFICIAL}<a href={OFFICIAL_URL} rel="noreferrer">公式サイト</a>をご覧ください。</p>;
 }
 
-export function ResultsScreen({ result, tab, draft, placeLabel, content, onRestart }: { result: CalcResult; tab: string; draft: BirthDraft; placeLabel: string; content: ContentMap; onRestart: () => void }) {
+export function ResultsScreen({ result, tab, content, onRestart }: { result: CalcResult; tab: string; content: ContentMap; onRestart: () => void }) {
   const active = tab === "overview" || MODULE_ORDER.includes(tab as never) ? tab : "overview";
   const tabs = [["overview", "概要"], ...MODULE_ORDER.map((m) => [m, MODULE_LABELS[m]!])] as const;
   return (
@@ -27,10 +24,7 @@ export function ResultsScreen({ result, tab, draft, placeLabel, content, onResta
       {active === "overview"
         ? <Overview result={result} content={content} />
         : <ModuleView module={result.modules[active]!} content={content} />}
-      <div class="panel">
-        <SaveControls draft={draft} placeLabel={placeLabel} />
-        <div class="actions"><button type="button" class="btn secondary" onClick={onRestart}>入力をやり直す</button></div>
-      </div>
+      <div class="actions"><button type="button" class="btn secondary" onClick={onRestart}>入力をやり直す</button></div>
     </section>
   );
 }
@@ -125,22 +119,5 @@ function NumerologyTrace({ data }: { data: NumerologyData }) {
         <dt>合計</dt><dd>{data.components.year.value} + {data.components.month.value} + {data.components.day.value} = {t(data.sumTrace)}</dd>
       </dl>
     </section>
-  );
-}
-
-function SaveControls({ draft, placeLabel }: { draft: BirthDraft; placeLabel: string }) {
-  const [saved, setSaved] = useState(!!readSaved());
-  const [failed, setFailed] = useState(false);
-  return saved ? (
-    <div>
-      <p class="note">入力をこの端末に保存しています。</p>
-      <div class="actions"><button type="button" class="btn secondary" onClick={() => { clearSaved(); setSaved(false); }}>保存を削除する</button></div>
-    </div>
-  ) : (
-    <div>
-      <p class="note">入力は保存していません。ページを閉じると消えます。</p>
-      <div class="actions"><button type="button" class="btn secondary" onClick={() => { const ok = writeSaved({ draft, placeLabel }); setSaved(ok); setFailed(!ok); }}>この端末に保存する</button></div>
-      {failed && <p class="alert" role="alert">この環境では保存できません。</p>}
-    </div>
   );
 }
