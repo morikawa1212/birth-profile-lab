@@ -6,3 +6,5 @@
   Permissions-Policy: geolocation=(), camera=(), microphone=()
 /*.txt
   Content-Type: text/plain; charset=utf-8
+/profile-lab/app/
+  Cache-Control: public, max-age=0, must-revalidate, no-transform
