@@ -3,6 +3,6 @@
   // ルートのパスがそのまま配信物のパスになるため、release.sh が dist-mount/profile-lab/app/ に配置する
   "name": "birth-profile-lab",
   "compatibility_date": "2026-11-01",
-  "route": "morikawatakashi.com/profile-lab/app/*",
+  "route": "morikawatakashi.com/profile-lab/app*",
   "assets": { "directory": "dist-mount" }
 }

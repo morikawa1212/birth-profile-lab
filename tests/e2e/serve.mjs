@@ -5,7 +5,7 @@ import http from "node:http";
 import path from "node:path";
 const dist = new URL("../../dist/", import.meta.url).pathname;
 const BASE = "/profile-lab/app/";
-const headers = Object.fromEntries(fs.readFileSync(dist + "_headers", "utf8").split("\n").slice(1).filter(Boolean).map((l) => {
+const headers = Object.fromEntries(fs.readFileSync(dist + "_headers", "utf8").split("\n/*.txt")[0].split("\n").slice(1).filter(Boolean).map((l) => {
   const i = l.indexOf(":");
   return [l.slice(0, i).trim(), l.slice(i + 1).trim()];
 }));

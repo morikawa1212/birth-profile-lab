@@ -4,3 +4,5 @@
   X-Content-Type-Options: nosniff
   X-Robots-Tag: noindex, nofollow
   Permissions-Policy: geolocation=(), camera=(), microphone=()
+/*.txt
+  Content-Type: text/plain; charset=utf-8
