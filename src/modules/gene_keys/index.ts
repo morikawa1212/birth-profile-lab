@@ -26,9 +26,9 @@ const SPHERES: readonly { id: string; label: string; group: string; epoch: Epoch
   { id: "radiance", label: "輝き", group: "activation", epoch: "design", body: BODY.sun, offset: 0 },
   { id: "purpose", label: "目的", group: "activation", epoch: "design", body: BODY.sun, offset: 180 },
   { id: "attraction", label: "引き寄せ", group: "venus", epoch: "design", body: BODY.moon, offset: 0 },
-  { id: "iq", label: "IQ", group: "venus", epoch: "natal", body: BODY.venus, offset: 0 },
-  { id: "eq", label: "EQ", group: "venus", epoch: "natal", body: BODY.mars, offset: 0 },
-  { id: "sq", label: "SQ", group: "venus", epoch: "design", body: BODY.venus, offset: 0 },
+  { id: "iq", label: "知能指数（IQ）", group: "venus", epoch: "natal", body: BODY.venus, offset: 0 },
+  { id: "eq", label: "心の知能指数（EQ）", group: "venus", epoch: "natal", body: BODY.mars, offset: 0 },
+  { id: "sq", label: "魂の知能指数（SQ）", group: "venus", epoch: "design", body: BODY.venus, offset: 0 },
   // コアと天職は同じ配置(出生前の火星)を、それぞれの道の視点で読む。天体の位置としては1つ
   { id: "core", label: "コア", group: "venus", epoch: "design", body: BODY.mars, offset: 0 },
   { id: "vocation", label: "天職", group: "pearl", epoch: "design", body: BODY.mars, offset: 0 },

@@ -5,7 +5,7 @@ import { SIGN_IDS, SIGNS } from "../core/zodiac";
 const SIGN_LABEL = Object.fromEntries(SIGN_IDS.map((id, i) => [id, SIGNS[i]!]));
 const GRAHA: Readonly<Record<string, string>> = { ...PLANET_LABELS, rahu: "ラーフ", ketu: "ケートゥ" };
 const ASPECT: Readonly<Record<string, string>> = { conjunction: "合", sextile: "六分", square: "矩", trine: "三分", opposition: "衝" };
-const SPHERE: Readonly<Record<string, string>> = { lifes_work: "ライフワーク", evolution: "進化", radiance: "輝き", purpose: "目的", attraction: "引き寄せ", iq: "IQ", eq: "EQ", sq: "SQ", core: "コア", vocation: "天職", culture: "文化", pearl: "パール" };
+const SPHERE: Readonly<Record<string, string>> = { lifes_work: "ライフワーク", evolution: "進化", radiance: "輝き", purpose: "目的", attraction: "引き寄せ", iq: "知能指数（IQ）", eq: "心の知能指数（EQ）", sq: "魂の知能指数（SQ）", core: "コア", vocation: "天職", culture: "文化", pearl: "パール" };
 
 /** 解説キーの見出し。解説データに title があればそちらを優先する */
 export function contentHeading(key: string): string {

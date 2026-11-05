@@ -12,7 +12,7 @@ test("入力から結果まで、Python 基準と同じ値が表示される", a
   await page.getByRole("button", { name: "この条件で計算する" }).click();
   await expect(page.getByRole("heading", { name: "計算結果の概要" })).toBeVisible();
   await page.getByRole("link", { name: "遺伝子易経", exact: true }).first().click();
-  const want: Record<string, string> = { ライフワーク: "38.1", 進化: "39.1", 輝き: "48.3", 目的: "21.3", 引き寄せ: "29.3", IQ: "34.2", EQ: "30.4", SQ: "29.5", コア: "26.6", 天職: "26.6", 文化: "27.1", パール: "42.5" };
+  const want: Record<string, string> = { ライフワーク: "38.1", 進化: "39.1", 輝き: "48.3", 目的: "21.3", 引き寄せ: "29.3", "知能指数（IQ）": "34.2", "心の知能指数（EQ）": "30.4", "魂の知能指数（SQ）": "29.5", コア: "26.6", 天職: "26.6", 文化: "27.1", パール: "42.5" };
   for (const [label, value] of Object.entries(want)) {
     await expect(page.getByRole("link", { name: `${label} ${value}` })).toBeVisible();
   }

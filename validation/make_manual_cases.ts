@@ -23,7 +23,7 @@ const CASES = [
   ["高緯度(ハウス保留)", "1980-06-21", "12:00", "Europe/Oslo", 69.65, 18.96, "Tromsø"],
 ] as const;
 let md = "# 公式チャートとの手作業の照合\n\n合成の出生情報です。実在の人の情報ではありません。公式サイトや別の計算ソフトに入力し、値を比べます。\n\n";
-md += "| 例 | 生年月日 | 時刻 | 場所 | ライフワーク | 進化 | 輝き | 目的 | 引き寄せ | IQ | EQ | SQ | コア/天職 | 文化 | パール | ASC | ラグナ |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n";
+md += "| 例 | 生年月日 | 時刻 | 場所 | ライフワーク | 進化 | 輝き | 目的 | 引き寄せ | 知能指数（IQ） | 心の知能指数（EQ） | 魂の知能指数（SQ） | コア/天職 | 文化 | パール | ASC | ラグナ |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n";
 for (const [name, date, time, timezone, lat, lon, place] of CASES) {
   const b = resolveBirth({ date, time, timezone, place: { lat, lon } }, tz, { today: "2026-11-05", toJdUt: (u) => engine.utcToJdUt(u) });
   const r = await calculate(b, engine);

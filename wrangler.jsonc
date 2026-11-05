@@ -1,0 +1,7 @@
+{
+  // 静的ファイルのみの配信。サーバー側の処理はなく、入力を受け取らない
+  "name": "birth-profile-lab",
+  "compatibility_date": "2026-11-01",
+  "route": "morikawatakashi.com/profile-lab/app/*",
+  "assets": { "directory": "dist", "base_path": "/profile-lab/app" }
+}
