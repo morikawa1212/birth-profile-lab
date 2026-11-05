@@ -11,3 +11,4 @@ results/
 .DS_Store
 test-results/
 playwright-report/
+dist-mount/

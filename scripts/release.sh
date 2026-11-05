@@ -8,4 +8,8 @@ cd "$(dirname "$0")/.."
 [ "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/$TAG^{commit}")" ] || { echo "HEAD がタグ $TAG と一致しません"; exit 1; }
 VITE_BUILD_VERSION="$TAG" VITE_SOURCE_URL="https://github.com/morikawa1212/birth-profile-lab/tree/$TAG" npx vite build
 cp "$CONTENT" dist/content/ja.json
+rm -rf dist-mount
+mkdir -p dist-mount/profile-lab
+cp -R dist dist-mount/profile-lab/app
+mv dist-mount/profile-lab/app/_headers dist-mount/_headers
 if [ "$MODE" = "--deploy" ]; then npx wrangler deploy; else npx wrangler deploy --dry-run; fi

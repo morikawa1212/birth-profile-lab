@@ -1,7 +1,8 @@
 {
   // 静的ファイルのみの配信。サーバー側の処理はなく、入力を受け取らない
+  // ルートのパスがそのまま配信物のパスになるため、release.sh が dist-mount/profile-lab/app/ に配置する
   "name": "birth-profile-lab",
   "compatibility_date": "2026-11-01",
   "route": "morikawatakashi.com/profile-lab/app/*",
-  "assets": { "directory": "dist", "base_path": "/profile-lab/app" }
+  "assets": { "directory": "dist-mount" }
 }
