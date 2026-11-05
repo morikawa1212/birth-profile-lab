@@ -1,0 +1,25 @@
+{
+ "tzdata": "2026.6",
+ "files": {
+  "places-jp.json": {
+   "bytes": 122234,
+   "gzip": 35772,
+   "sha256": "3401d70c254981a993814fa62d311e3e16aa085fb238c88e9e83bc350e7e0400"
+  },
+  "places-jp-extra.json": {
+   "bytes": 1822000,
+   "gzip": 492033,
+   "sha256": "4359d5ced0f0c5a223de009bd60a51cc9cd8f33222d4b282445ca5875dac99f0"
+  },
+  "places-world.json": {
+   "bytes": 3635073,
+   "gzip": 1521681,
+   "sha256": "6ae7493c257715e400984885e5f66550b90daf04b380c77a506e8e950a737918"
+  },
+  "tzdata.json": {
+   "bytes": 863444,
+   "gzip": 118349,
+   "sha256": "6244be326f7f0575b3aa3d74af5cc5e382d656a42f65aacbf38d40d1760c651d"
+  }
+ }
+}

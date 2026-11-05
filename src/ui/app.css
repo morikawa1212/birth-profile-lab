@@ -1,0 +1,80 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* HPのリニューアルページと同じ色・文字の考え方。第三者のフォントは読み込まない */
+:root {
+  --text: #1d2433; --sub: #434b5c; --line: #d5dae0; --tint: #f4f7f7;
+  --accent: #0b7a86; --accent-dark: #075f68; --focus: #f2b84b;
+  --warn-bg: #fdf3df; --warn-line: #dca63c; --err: #a12a22; --err-bg: #fbe8e6;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: #fff; color: var(--text); font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", Meiryo, sans-serif; font-size: 17px; line-height: 1.85; letter-spacing: .02em; }
+a { color: var(--accent-dark); text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+h1:focus { outline: none; }
+.page { min-height: 100vh; display: flex; flex-direction: column; }
+.site-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 16px; padding: 12px 20px; border-bottom: 1px solid var(--line); font-size: 15px; }
+.brand { font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; }
+.content { flex: 1; width: 100%; max-width: 760px; margin: 0 auto; padding: 28px 20px 56px; }
+h1 { font-size: 28px; line-height: 1.5; margin: 0 0 14px; }
+h2 { font-size: 20px; line-height: 1.5; margin: 0 0 8px; }
+h3 { font-size: 17px; margin: 16px 0 6px; }
+p { margin: 0 0 12px; }
+.lead { color: var(--sub); }
+.note { color: var(--sub); font-size: 15.5px; }
+fieldset { border: 0; border-top: 1px solid var(--line); margin: 22px 0 0; padding: 16px 0 0; min-width: 0; }
+legend { font-weight: 700; font-size: 18px; padding: 0 8px 0 0; }
+label { display: block; font-weight: 500; }
+input:not([type=radio]):not([type=checkbox]), select { display: block; width: 100%; min-height: 48px; margin-top: 4px; padding: 8px 12px; border: 1.5px solid #7c8796; border-radius: 6px; background: #fff; color: var(--text); font: inherit; }
+.date-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+.manual .date-row { grid-template-columns: 1fr 1fr; margin-bottom: 12px; }
+.radios { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 12px; }
+.radios label, .check { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; font-weight: 400; }
+input[type=radio], input[type=checkbox] { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
+.candidates { list-style: none; margin: 8px 0 12px; padding: 0; border: 1px solid var(--line); border-radius: 6px; }
+.candidates li + li { border-top: 1px solid var(--line); }
+.candidates button { display: flex; justify-content: space-between; gap: 12px; width: 100%; min-height: 46px; padding: 8px 12px; background: none; border: 0; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.candidates button:hover { background: var(--tint); }
+.candidates small { color: var(--sub); white-space: nowrap; }
+.selected { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 16px; padding: 10px 12px; background: var(--tint); border-radius: 6px; }
+.link { background: none; border: 0; padding: 6px 0; color: var(--accent-dark); font: inherit; text-decoration: underline; cursor: pointer; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 10px 24px; border: 2px solid var(--accent); border-radius: 6px; font: inherit; font-weight: 700; cursor: pointer; }
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+.btn.secondary { background: #fff; color: var(--accent-dark); }
+.btn.secondary:hover { background: #eef6f7; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.alert { margin: 14px 0; padding: 10px 14px; background: var(--err-bg); border-left: 4px solid var(--err); color: #7d1d16; }
+.notice { margin: 14px 0; padding: 10px 14px; background: var(--warn-bg); border-left: 4px solid var(--warn-line); }
+.panel { margin: 24px 0; padding: 14px 16px; background: var(--tint); border-radius: 8px; }
+.panel .actions { margin-top: 8px; }
+.panel > summary, .card > summary { font-weight: 700; cursor: pointer; }
+.table { display: grid; grid-template-columns: minmax(7em, auto) 1fr; gap: 6px 16px; margin: 10px 0; }
+.table dt { color: var(--sub); }
+.table dd { margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.table small { color: var(--sub); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 18px; border-bottom: 2px solid var(--line); }
+.tabs a { padding: 8px 12px; text-decoration: none; color: var(--sub); border-bottom: 3px solid transparent; margin-bottom: -2px; font-size: 15.5px; }
+.tabs a[aria-current=page] { color: var(--accent-dark); border-color: var(--accent); font-weight: 700; }
+.stack { display: grid; gap: 16px; }
+.card { padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.card > :last-child { margin-bottom: 0; }
+.items { list-style: none; margin: 0; padding: 0; }
+.items li + li { border-top: 1px solid var(--line); }
+.item { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 16px; padding: 9px 2px; color: var(--text); text-decoration: none; }
+.item:hover { background: var(--tint); }
+.item strong { font-variant-numeric: tabular-nums; color: var(--accent-dark); }
+.result-value { font-size: 24px; font-weight: 700; color: var(--accent-dark); font-variant-numeric: tabular-nums; }
+.pending { color: var(--sub); }
+.summary { flex-basis: 100%; color: var(--sub); font-size: 14.5px; }
+.draft-tag { display: inline-block; margin: 0 0 8px; padding: 0 8px; background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 4px; font-size: 13px; }
+.site-footer { padding: 18px 20px 28px; background: var(--tint); font-size: 14.5px; color: var(--sub); }
+.site-footer nav { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-bottom: 8px; }
+.version { margin: 0; }
+@media (max-width: 480px) {
+  .content { padding: 22px 16px 44px; }
+  h1 { font-size: 24px; }
+  .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }

@@ -1,0 +1,6 @@
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  X-Robots-Tag: noindex, nofollow
+  Permissions-Policy: geolocation=(), camera=(), microphone=()
