@@ -11,7 +11,7 @@ export default defineConfig({
   timeout: 45_000,
   expect: { timeout: 15_000 },
   reporter: [["list"]],
-  use: { baseURL: remote ?? "http://127.0.0.1:8796/profile-lab/app/", locale: "ja-JP", timezoneId: "Asia/Tokyo" },
+  use: { screenshot: "only-on-failure", trace: "retain-on-failure", baseURL: remote ?? "http://127.0.0.1:8796/profile-lab/app/", locale: "ja-JP", timezoneId: "Asia/Tokyo" },
   ...(remote ? {} : { webServer: { command: "node tests/e2e/serve.mjs", url: "http://127.0.0.1:8796/profile-lab/app/", reuseExistingServer: false } }),
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: /a11y/ },

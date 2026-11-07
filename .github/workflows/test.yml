@@ -1,5 +1,12 @@
 name: test
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      repeat:
+        description: ブラウザテストを繰り返す回数
+        default: "1"
 permissions:
   contents: read
 jobs:
@@ -15,4 +22,10 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npx playwright install --with-deps chromium firefox webkit
-      - run: npm run test:e2e
+      - run: npm run test:e2e -- --repeat-each=\${{ inputs.repeat || '1' }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-failures
+          path: test-results/
+          retention-days: 7
