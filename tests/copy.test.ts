@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { calculate } from "../src/engine/calculate";
 import { allModulesText, singleModuleText } from "../src/ui/copyText";
-import { ageOn, buildPrompt, buildSinglePrompt, PROMPT_ORDER, promptHead, singlePromptHead } from "../src/ui/prompts";
+import { ageOn, buildContemplationPrompt, buildPrompt, buildSinglePrompt, CONTEMPLATION_HEAD, PROMPT_ORDER, promptHead, singlePromptHead } from "../src/ui/prompts";
 import type { ContentMap, ContentRecord } from "../src/ui/content";
 import { BASE, BASE_UTC, engine, norm } from "./helpers";
 
@@ -92,7 +92,7 @@ describe("AI鑑定用プロンプト", () => {
     expect(t).not.toContain("# 相談したいこと");
     expect(promptHead("seven_years", { year: 2026, age: 7 })).toContain("7〜14歳の周期まで");
   });
-  it.each([["gene_keys", "遺伝子易経", ["心の闇", "パールの道"]], ["western", "西洋占星術", ["ハウス", "アスペクト"]], ["vedic", "インド占星術", ["ラグナ", "ナクシャトラ"]], ["numerology", "数秘術", ["ライフパス", "誕生数"]]] as const)("占術別(%s): その占術だけを指示する", (id, name, words) => {
+  it.each([["western", "西洋占星術", ["ハウス", "アスペクト"]], ["vedic", "インド占星術", ["ラグナ", "ナクシャトラ"]], ["numerology", "数秘術", ["ライフパス", "誕生数"]]] as const)("占術別(%s): その占術だけを指示する", (id, name, words) => {
     const t = singlePromptHead(id);
     expect(t).toContain(`あなたは${name}に詳しい鑑定士です`);
     for (const w of words) expect(t, w).toContain(w);
@@ -119,9 +119,16 @@ describe("AI鑑定用プロンプト", () => {
     expect(allModulesText(r, s, c, { compact: true })).not.toContain("ヒントの本文");
   });
   it("鍵の要約に沿って補う指示は遺伝子易経を含むプロンプトだけに入る", () => {
-    expect(singlePromptHead("gene_keys")).toContain("要約に沿って補い");
+    expect(CONTEMPLATION_HEAD).toContain("要約に沿って補い");
     expect(singlePromptHead("western")).not.toContain("要約に沿って");
     for (const id of PROMPT_ORDER) expect(promptHead(id, ctx), id).toContain("要約に沿って補い");
+  });
+  it("遺伝子易経は鑑定ではなく観照を支える", () => {
+    const t = CONTEMPLATION_HEAD;
+    for (const x of ["観照に寄り添う案内役", "鑑定や診断ではなく", "一度に1つだけ質問", "答えや結論を与えず", "直そうとさせない", "天の光を努力して到達する目標", "持ち歩く問い", "飛ばしてよい"]) expect(t, x).toContain(x);
+    for (const x of ["西洋占星術", "インド占星術", "数秘術", "セッション", "コーチング"]) expect(t, x).not.toContain(x);
+    const p = buildContemplationPrompt("本文");
+    expect(p.endsWith("# 遺伝子易経の内容\n本文")).toBe(true);
   });
   it("満年齢は誕生日の前後で変わる", () => {
     expect(ageOn("2000-06-15", "2026-06-14")).toBe(25);

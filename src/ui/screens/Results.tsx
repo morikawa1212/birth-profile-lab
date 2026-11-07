@@ -5,7 +5,7 @@ import type { NumerologyData } from "../../modules/numerology/index";
 import type { WesternData } from "../../modules/western/index";
 import type { ContentMap } from "../content";
 import { allModulesText, singleModuleText, type BirthSummary } from "../copyText";
-import { ageOn, buildPrompt, buildSinglePrompt, PROMPT_ORDER, PROMPT_PATTERNS, type PromptContext } from "../prompts";
+import { ageOn, buildContemplationPrompt, buildPrompt, buildSinglePrompt, PROMPT_ORDER, PROMPT_PATTERNS, type PromptContext } from "../prompts";
 import { CopyButton } from "../CopyButton";
 import { GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows, SUMMARY_ITEMS } from "../labels";
 import { DICTIONARY_SEARCH_URL, INQUIRY_URL, NOT_OFFICIAL, OFFICIAL_URL, SESSION_URL } from "../site";
@@ -32,12 +32,19 @@ export function ResultsScreen({ result, tab, time, placeLabel, content, onRestar
             : <CopyButton primary label={`${MODULE_LABELS[active]}の分析結果をコピー`} text={() => singleModuleText(result.modules[active]!, summary, content)} />}
           <p class="note copy-note">コピーしてAIでの分析などでご活用ください。コピーには生年月日、時刻、出生地と解説の本文が含まれます。貼り付けた内容は、貼り付け先のサービスへ送られます。</p>
           <section class="prompt-box" aria-labelledby="prompt-title">
-            <h2 id="prompt-title">AI鑑定用プロンプト生成</h2>
-            <p class="note">知りたいことを選ぶと、AIへの指示と鑑定内容をまとめてコピーします。AIに貼り付けてお使いください。</p>
+            <h2 id="prompt-title">{active === "gene_keys" ? "AI観照サポート用プロンプト生成" : "AI鑑定用プロンプト生成"}</h2>
+            <p class="note">{active === "gene_keys"
+              ? "遺伝子易経は、内容を知ったうえで、日常の中で観照していくことを大切にします。AIが質問をしながら観照に寄り添うプロンプトを、鑑定内容とあわせてコピーします。"
+              : "知りたいことを選ぶと、AIへの指示と鑑定内容をまとめてコピーします。AIに貼り付けてお使いください。"}</p>
             <div class="prompt-buttons">
               {active === "overview"
-                ? PROMPT_ORDER.map((id) => <PromptButton key={id} label={PROMPT_PATTERNS[id].label} text={() => buildPrompt(id, allModulesText(result.modules, summary, content, { compact: true }), promptContext(result.birth.isoDate))} />)
-                : <PromptButton label={`${MODULE_LABELS[active]}の鑑定`} text={() => buildSinglePrompt(active, singleModuleText(result.modules[active]!, summary, content, { compact: true }))} />}
+                ? <>
+                    {PROMPT_ORDER.map((id) => <PromptButton key={id} label={PROMPT_PATTERNS[id].label} text={() => buildPrompt(id, allModulesText(result.modules, summary, content, { compact: true }), promptContext(result.birth.isoDate))} />)}
+                    {result.modules.gene_keys!.status !== "unavailable" && <PromptButton label="遺伝子易経の観照サポート" text={() => buildContemplationPrompt(singleModuleText(result.modules.gene_keys!, summary, content, { compact: true }))} />}
+                  </>
+                : active === "gene_keys"
+                  ? <PromptButton label="観照をサポートするプロンプト" text={() => buildContemplationPrompt(singleModuleText(result.modules.gene_keys!, summary, content, { compact: true }))} />
+                  : <PromptButton label={`${MODULE_LABELS[active]}の鑑定`} text={() => buildSinglePrompt(active, singleModuleText(result.modules[active]!, summary, content, { compact: true }))} />}
             </div>
           </section>
         </div>

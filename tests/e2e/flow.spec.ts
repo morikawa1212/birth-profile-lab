@@ -233,10 +233,21 @@ test("すべての結果と体系別の結果をコピーできる", async ({ pa
     expect(prompt).toContain("■ 数秘術");
   }
 
+  await page.getByRole("button", { name: "遺伝子易経の観照サポート" }).click();
+  await expect.poll(last).toContain("観照に寄り添う案内役");
+  expect(await last()).toContain("■ 遺伝子易経");
+  expect(await last()).not.toContain("■ 数秘術");
+
   await page.getByRole("button", { name: "西洋占星術の分析結果をコピー" }).click();
   const card = await last();
   expect(card).toContain("■ 西洋占星術");
   expect(card).not.toContain("■ 遺伝子易経");
+
+  await page.getByRole("navigation", { name: "体系の切り替え" }).getByRole("link", { name: "遺伝子易経", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "AI観照サポート用プロンプト生成" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /鑑定$/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "観照をサポートするプロンプト" }).click();
+  await expect.poll(last).toContain("鑑定や診断ではなく");
 
   await page.getByRole("link", { name: "インド占星術", exact: true }).first().click();
   await page.getByRole("button", { name: "インド占星術の分析結果をコピー" }).click();
@@ -306,7 +317,7 @@ test("時刻不明の体系にはコピーボタンを出さない", async ({ pa
   await expect(page.getByRole("button", { name: "西洋占星術の分析結果をコピー" })).toHaveCount(0);
   await page.getByRole("link", { name: "西洋占星術", exact: true }).first().click();
   await expect(page.getByRole("button", { name: /分析結果をコピー/ })).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "AI鑑定用プロンプト生成" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: /プロンプト生成/ })).toHaveCount(0);
 });
 
 test("このサイトについて: 運営者の文章を HTML として解釈せず表示する", async ({ page }) => {
