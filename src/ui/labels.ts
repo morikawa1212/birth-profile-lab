@@ -42,15 +42,15 @@ export const GROUP_LABELS: Readonly<Record<string, string>> = {
 
 const SETTING_VALUES: Readonly<Record<string, string>> = {
   tropical: "トロピカル", sidereal: "サイデリアル", geocentric_apparent: "地心視位置",
-  solar_longitude_minus_88_degrees: "出生前の時点: 太陽黄経が88度前", "11_spheres": "11スフィア",
+  solar_longitude_minus_88_degrees: "太陽黄経が88度前の時点", "11_spheres": "11スフィア",
   placidus: "プラシーダス", ecliptic_longitude_between_cusps: "黄経とカスプの比較", uniform_orb: "全アスペクト共通",
   Lahiri: "ラヒリ", whole_sign: "ホールサイン", mean: "平均ノード", D1_and_moon_nakshatra: "D1と月のナクシャトラ",
-  three_components_preserve_11_22_33: "年月日を個別に還元し、11・22・33を保持", gregorian_local_date: "出生地の現地の暦日",
+  all_digits_preserve_11_22_33: "生年月日の全桁を足し、11・22・33が出たら止める", day_digits_preserve_11_22: "生まれた日を1桁になるまで足し、11・22は止める", gregorian_local_date: "出生地の現地の暦日",
 };
 const SETTING_NAMES: Readonly<Record<string, string>> = {
-  zodiac: "黄道帯", positions: "天体位置", designRule: "計算方法", scope: "範囲", houses: "ハウス方式",
+  zodiac: "黄道帯", positions: "天体位置", designRule: "出生前の時点", scope: "範囲", houses: "ハウス方式",
   houseAssignment: "天体のハウス判定", aspectOrbDeg: "オーブ(度)", aspectRule: "オーブの決め方", ayanamsa: "アヤナムサ",
-  node: "ノード", method: "方式", calendar: "暦",
+  node: "ノード", method: "ライフパス", birthdayMethod: "誕生数", calendar: "暦",
 };
 const HIDDEN = new Set(["official", "nameNumerology"]);
 

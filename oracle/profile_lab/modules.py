@@ -140,8 +140,7 @@ def reduce_number(value: int) -> tuple[int,list[int]]:
 @register('numerology')
 def numerology(ctx: BirthContext, ephe: Ephemeris) -> dict[str, Any]:
     d = ctx.local_date  # IMPORTANT: use local civil birth date, not UTC date.
-    components = {name:reduce_number(value) for name,value in [('year',d.year),('month',d.month),('day',d.day)]}
-    raw = sum(v[0] for v in components.values())
-    life_path, trace = reduce_number(raw)
+    digits = [int(x) for x in d.strftime('%Y%m%d')]
+    life_path, trace = reduce_number(sum(digits))
     birthday, birthday_trace = reduce_number(d.day)
-    return {'status':'calculated','module_version':'0.1.0','settings':{'method':'three_components_preserve_11_22_33','calendar':'gregorian_local_date','name_numerology':False},'data':{'life_path':life_path,'components':{k:{'value':v[0],'trace':v[1]} for k,v in components.items()},'sum_trace':trace,'birthday':birthday,'birthday_trace':birthday_trace},'interpretation_status':'not_loaded'}
+    return {'status':'calculated','module_version':'0.2.0','settings':{'method':'all_digits_preserve_11_22_33','birthday_method':'day_digits_preserve_11_22','calendar':'gregorian_local_date','name_numerology':False},'data':{'life_path':life_path,'digits':digits,'sum_trace':trace,'birthday':birthday,'birthday_trace':birthday_trace},'interpretation_status':'not_loaded'}

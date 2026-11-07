@@ -47,7 +47,7 @@ def test_master_preserved(n):
 
 def test_numerology_trace():
     n=calculate(BASE)['modules']['numerology']['data']
-    assert n['components']['year']['trace']==[2000,2]
+    assert n['digits']==[2,0,0,0,0,1,0,1]
     assert n['sum_trace']==[4]
 
 def test_unknown_time():

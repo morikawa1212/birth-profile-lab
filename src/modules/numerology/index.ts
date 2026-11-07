@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// 数秘術(生年月日): 年月日を個別に還元し、11・22・33 を保持する方式。現地の暦日を使う。
+// 数秘術(生年月日): 年月日の全桁を足し、途中や最後に 11・22・33 が出たら止める方式。現地の暦日を使う。
 import type { DivinationModule } from "../../core/types";
 
 const MASTERS = new Set([11, 22, 33]);
@@ -16,20 +16,22 @@ export function reduceNumber(start: number): { value: number; trace: number[] } 
 
 export interface NumerologyData {
   lifePath: number;
-  components: Readonly<Record<"year" | "month" | "day", { value: number; trace: number[] }>>;
+  /** 生年月日(YYYYMMDD)の各桁 */
+  digits: number[];
+  /** 全桁の合計から結果までの過程 */
   sumTrace: number[];
   birthday: number;
   birthdayTrace: number[];
 }
 
-const settings = { method: "three_components_preserve_11_22_33", calendar: "gregorian_local_date", nameNumerology: false } as const;
+const settings = { method: "all_digits_preserve_11_22_33", birthdayMethod: "day_digits_preserve_11_22", calendar: "gregorian_local_date", nameNumerology: false } as const;
 
 export const numerologyModule: DivinationModule<typeof settings, NumerologyData> = {
-  id: "numerology", version: "0.1.0", label: "数秘術",
+  id: "numerology", version: "0.2.0", label: "数秘術",
   requires: ["date"], defaultSettings: settings, validationStatus: "experimental",
   compute(ctx) {
-    const components = { year: reduceNumber(ctx.year), month: reduceNumber(ctx.month), day: reduceNumber(ctx.day) };
-    const sum = reduceNumber(components.year.value + components.month.value + components.day.value);
+    const digits = [...`${String(ctx.year).padStart(4, "0")}${String(ctx.month).padStart(2, "0")}${String(ctx.day).padStart(2, "0")}`].map(Number);
+    const sum = reduceNumber(digits.reduce((total, d) => total + d, 0));
     const birthday = reduceNumber(ctx.day);
     return {
       items: [
@@ -42,7 +44,7 @@ export const numerologyModule: DivinationModule<typeof settings, NumerologyData>
           display: String(birthday.value), contentKeys: [`num.birthday.${birthday.value}`],
         },
       ],
-      data: { lifePath: sum.value, components, sumTrace: sum.trace, birthday: birthday.value, birthdayTrace: birthday.trace },
+      data: { lifePath: sum.value, digits, sumTrace: sum.trace, birthday: birthday.value, birthdayTrace: birthday.trace },
     };
   },
 };

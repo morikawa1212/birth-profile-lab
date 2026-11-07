@@ -23,7 +23,7 @@ test("入力から結果まで、Python 基準と同じ値が表示される", a
   await expect(page.getByRole("link", { name: /ASC 牡羊座 23\.\d\d°/ })).toBeVisible();
   await page.getByRole("link", { name: "数秘術", exact: true }).click();
   await expect(page.getByRole("link", { name: "ライフパス 4" })).toBeVisible();
-  await expect(page.getByText("2000 → 2")).toBeVisible();
+  await expect(page.getByText("2 + 0 + 0 + 0 + 0 + 1 + 0 + 1 = 4")).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -190,6 +190,45 @@ test("このサイトについて: ライセンスと出典に到達できる", 
     expect(r.status(), name).toBe(200);
   }
   await expect(page.getByText("GeoNames(CC BY 4.0)")).toBeVisible();
+});
+
+test("すべての結果と体系別の結果をコピーできる", async ({ page }) => {
+  // ブラウザごとの権限の差を避けるため、書き込まれた文字列を記録して確かめる
+  await page.addInitScript(() => {
+    (window as unknown as { copied: string[] }).copied = [];
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (t: string) => { (window as unknown as { copied: string[] }).copied.push(t); } } });
+  });
+  await toResults(page, SYNTHETIC);
+  const last = () => page.evaluate(() => (window as unknown as { copied: string[] }).copied.at(-1) ?? "");
+  await page.getByRole("button", { name: "すべての分析結果をコピー" }).click();
+  await expect(page.getByRole("button", { name: "コピーしました" })).toBeVisible();
+  const all = await last();
+  for (const x of ["■ 遺伝子易経", "■ 西洋占星術", "■ インド占星術", "■ 数秘術", "38.1", "ライフパス: 4"]) expect(all).toContain(x);
+  expect(all).toContain("生年月日: 2000-01-01");
+  expect(all).toContain("出生時刻: 12:00");
+  expect(all).toContain("出生地: 東京都千代田区");
+  await expect(page.getByText("コピーには生年月日、時刻、出生地と解説の本文が含まれます。")).toBeVisible();
+
+  await page.getByRole("button", { name: "西洋占星術の分析結果をコピー" }).click();
+  const card = await last();
+  expect(card).toContain("■ 西洋占星術");
+  expect(card).not.toContain("■ 遺伝子易経");
+
+  await page.getByRole("link", { name: "インド占星術", exact: true }).first().click();
+  await page.getByRole("button", { name: "インド占星術の分析結果をコピー" }).click();
+  const tab = await last();
+  expect(tab).toContain("■ インド占星術");
+  expect(tab).toContain("スヴァーティー");
+  expect(tab).not.toContain("■ 数秘術");
+});
+
+test("時刻不明の体系にはコピーボタンを出さない", async ({ page }) => {
+  await toConfirm(page, { y: "2000", m: "1", d: "1", accuracy: "不明" });
+  await page.getByRole("button", { name: "この条件で計算する" }).click();
+  await expect(page.getByRole("button", { name: "数秘術の分析結果をコピー" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "西洋占星術の分析結果をコピー" })).toHaveCount(0);
+  await page.getByRole("link", { name: "西洋占星術", exact: true }).first().click();
+  await expect(page.getByRole("button", { name: /分析結果をコピー/ })).toHaveCount(0);
 });
 
 test("スマホ幅でも横にはみ出さない", async ({ page }) => {

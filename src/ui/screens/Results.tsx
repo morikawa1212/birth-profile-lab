@@ -4,6 +4,8 @@ import type { CalcResult } from "../../engine/worker";
 import type { NumerologyData } from "../../modules/numerology/index";
 import type { WesternData } from "../../modules/western/index";
 import type { ContentMap } from "../content";
+import { allModulesText, singleModuleText, type BirthSummary } from "../copyText";
+import { CopyButton } from "../CopyButton";
 import { GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows, SUMMARY_ITEMS } from "../labels";
 import { NOT_OFFICIAL, OFFICIAL_URL } from "../site";
 
@@ -11,7 +13,8 @@ export function OfficialNote() {
   return <p class="notice">{NOT_OFFICIAL}<a href={OFFICIAL_URL} rel="noreferrer">公式サイト</a>をご覧ください。</p>;
 }
 
-export function ResultsScreen({ result, tab, content, onRestart }: { result: CalcResult; tab: string; content: ContentMap; onRestart: () => void }) {
+export function ResultsScreen({ result, tab, time, placeLabel, content, onRestart }: { result: CalcResult; tab: string; time?: string; placeLabel: string; content: ContentMap; onRestart: () => void }) {
+  const summary: BirthSummary = { birth: result.birth, placeLabel, ...(time ? { time } : {}) };
   const active = tab === "overview" || MODULE_ORDER.includes(tab as never) ? tab : "overview";
   const tabs = [["overview", "概要"], ...MODULE_ORDER.map((m) => [m, MODULE_LABELS[m]!])] as const;
   return (
@@ -21,8 +24,14 @@ export function ResultsScreen({ result, tab, content, onRestart }: { result: Cal
         {tabs.map(([id, label]) => <a key={id} href={`#${id}`} aria-current={active === id ? "page" : undefined}>{label}</a>)}
       </nav>
       {result.birth.notes.map((n) => <p key={n} class="notice">{n}</p>)}
+      <div class="copy-row">
+        {active === "overview"
+          ? <CopyButton primary label="すべての分析結果をコピー" text={() => allModulesText(result.modules, summary, content)} />
+          : result.modules[active]!.status !== "unavailable" && <CopyButton primary label={`${MODULE_LABELS[active]}の分析結果をコピー`} text={() => singleModuleText(result.modules[active]!, summary, content)} />}
+        <p class="note copy-note">コピーには生年月日、時刻、出生地と解説の本文が含まれます。</p>
+      </div>
       {active === "overview"
-        ? <Overview result={result} content={content} />
+        ? <Overview result={result} summary={summary} content={content} />
         : <ModuleView module={result.modules[active]!} content={content} />}
       <div class="actions"><button type="button" class="btn secondary" onClick={onRestart}>入力をやり直す</button></div>
     </section>
@@ -40,7 +49,7 @@ function ItemRow({ moduleId, item, content }: { moduleId: string; item: ResultIt
   );
 }
 
-function Overview({ result, content }: { result: CalcResult; content: ContentMap }) {
+function Overview({ result, summary, content }: { result: CalcResult; summary: BirthSummary; content: ContentMap }) {
   return (
     <div class="stack">
       <p class="note">各体系の主要な項目です。項目を選ぶと詳しい内容を確認できます。体系どうしを組み合わせた鑑定は行いません。</p>
@@ -50,7 +59,12 @@ function Overview({ result, content }: { result: CalcResult; content: ContentMap
         return (
           <section key={id} class="card">
             <h2><a href={`#${id}`}>{MODULE_LABELS[id]}</a></h2>
-            {m.status === "unavailable" ? <Unavailable module={m} /> : <ul class="items">{items.map((i) => <ItemRow key={i.id} moduleId={id} item={i} content={content} />)}</ul>}
+            {m.status === "unavailable" ? <Unavailable module={m} /> : (
+              <>
+                <ul class="items">{items.map((i) => <ItemRow key={i.id} moduleId={id} item={i} content={content} />)}</ul>
+                <div class="copy-row card-copy"><CopyButton label={`${MODULE_LABELS[id]}の分析結果をコピー`} text={() => singleModuleText(m, summary, content)} /></div>
+              </>
+            )}
           </section>
         );
       })}
@@ -113,10 +127,8 @@ function NumerologyTrace({ data }: { data: NumerologyData }) {
     <section class="card">
       <h2>計算の過程</h2>
       <dl class="table">
-        <dt>年</dt><dd>{t(data.components.year.trace)}</dd>
-        <dt>月</dt><dd>{t(data.components.month.trace)}</dd>
-        <dt>日</dt><dd>{t(data.components.day.trace)}</dd>
-        <dt>合計</dt><dd>{data.components.year.value} + {data.components.month.value} + {data.components.day.value} = {t(data.sumTrace)}</dd>
+        <dt>ライフパス</dt><dd>{data.digits.join(" + ")} = {t(data.sumTrace)}</dd>
+        <dt>誕生数</dt><dd>{t(data.birthdayTrace)}</dd>
       </dl>
     </section>
   );

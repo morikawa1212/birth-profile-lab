@@ -25,9 +25,11 @@
 8. Gene Keys — 公式プロフィールとの相違
    https://genekeys.com/how-to-read-your-profile/
    使用暦、出生時刻・場所、他のソフトとの相違を確認するための資料。
-9. World Numerology / Hans Decoz — ライフパスの方式
-   https://www.worldnumerology.com/numerology-life-path/
-   年月日ごとの還元と11/22/33の保持。試作が採用する方式の出典であり、他流派を否定しない。
+9. bis「【数秘術・計算方法】あなたの本性は？ “運命数”別に紐解く、性格の特徴一覧」(数秘術鑑定士 YUMI IZUMI 監修) — ライフパスの方式
+   https://bisweb.jp/lifestyle/153628
+   生年月日の全桁を足し、11・22・33 が出たら止める。他流派を否定するものではない。
+   数秘LIFE「数秘術計算で、自分や相手を知る」(数秘研究家ともこ) — 誕生数に相当する才能数の規則(11・22 で止める)
+   https://www.tomoko635.jp/calculation/
 10. 国立天文台 暦計算室 — 二十四節気
     https://eco.mtk.nao.ac.jp/koyomi/faq/24sekki.html.en
     将来の暦エンジンで検討する天文学的な定義。特定占術の流派規則まで定義する資料ではない。

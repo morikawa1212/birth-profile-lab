@@ -45,6 +45,14 @@ input[type=radio], input[type=checkbox] { width: 20px; height: 20px; margin: 0; 
 .btn.secondary { background: #fff; color: var(--accent-dark); }
 .btn.secondary:hover { background: #eef6f7; }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
+.copy-row { margin: 0 0 16px; }
+.copy-note { margin: 6px 0 0; font-size: 14px; }
+.card-copy { margin: 12px 0 0; }
+.copy { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.copy-btn { min-height: 44px; padding: 8px 18px; font-size: 15.5px; }
+.copy-status { color: var(--sub); font-size: 14px; }
+.copy-status:empty { display: none; }
+.copy-source { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; }
 .alert { margin: 14px 0; padding: 10px 14px; background: var(--err-bg); border-left: 4px solid var(--err); color: #7d1d16; }
 .notice { margin: 14px 0; padding: 10px 14px; background: var(--warn-bg); border-left: 4px solid var(--warn-line); }
 .panel { margin: 24px 0; padding: 14px 16px; background: var(--tint); border-radius: 8px; }

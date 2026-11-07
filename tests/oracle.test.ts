@@ -71,7 +71,7 @@ describe("Python 基準との一致", () => {
       expect(n.sumTrace).toEqual(pn.sum_trace);
       expect(n.birthday).toBe(pn.birthday);
       expect(n.birthdayTrace).toEqual(pn.birthday_trace);
-      for (const k of ["year", "month", "day"] as const) expect(n.components[k].trace).toEqual(pn.components[k].trace);
+      expect(n.digits).toEqual(pn.digits);
     }
     expect(high).toBeGreaterThan(0); // 高緯度の例が含まれていること
   }, 120_000);

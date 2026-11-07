@@ -29,6 +29,17 @@ test("すべての通信が同じ配信元の静的取得で、入力を含ま�
   expect(await page.evaluate(() => [localStorage.length, sessionStorage.length, document.cookie])).toEqual([0, 0, ""]);
 });
 
+test("Chromium の実際のクリップボードにも書き込める", async ({ page, context, browserName }) => {
+  test.skip(browserName !== "chromium", "権限の付与は Chromium のみ");
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await toResults(page, { y: "1987", m: "6", d: "23", time: "13:47", place: "世田谷", pick: "東京都世田谷区" });
+  await page.getByRole("button", { name: "すべての分析結果をコピー" }).click();
+  await expect(page.getByRole("button", { name: "コピーしました" })).toBeVisible();
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  expect(text).toContain("■ 数秘術");
+  for (const mark of ["1987-06-23", "13:47", "東京都世田谷区"]) expect(text, mark).toContain(mark);
+});
+
 test("外部へ通信しようとしても CSP が遮断する", async ({ page }) => {
   await page.goto("./");
   const blocked = await page.evaluate(() => fetch("https://example.com/").then(() => false, () => true));

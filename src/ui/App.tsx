@@ -98,7 +98,7 @@ export function App() {
         {view === "confirm" && draft && confirmation && (
           <ConfirmScreen draft={draft} placeLabel={placeLabel} confirmation={confirmation} busy={busy} onBack={() => { setError(""); setStage("input"); }} onChange={reconfirm} onCalculate={runCalculation} />
         )}
-        {view === "results" && result && <ResultsScreen result={result} tab={route || "overview"} content={content} onRestart={restart} />}
+        {view === "results" && result && <ResultsScreen result={result} tab={route || "overview"} {...(draft?.time ? { time: draft.time } : {})} placeLabel={placeLabel} content={content} onRestart={restart} />}
         {view === "detail" && result && <DetailScreen result={result} moduleId={route!} itemId={itemId!} content={content} />}
         {view === "about" && <AboutScreen hasResult={!!result} result={result} />}
       </main>

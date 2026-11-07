@@ -5,10 +5,11 @@ import zlib from "node:zlib";
 import { describe, expect, it } from "vitest";
 import type { UtcParts } from "../src/core/types";
 import { keyLine } from "../src/modules/gene_keys/index";
-import { reduceNumber } from "../src/modules/numerology/index";
+import { calculate } from "../src/engine/calculate";
+import type { NumerologyData } from "../src/modules/numerology/index";
 import { confirmBirth } from "../src/time/resolve";
 import type { TzData } from "../src/time/tz";
-import { engine } from "./helpers";
+import { engine, norm } from "./helpers";
 
 const gz = (f: string) => JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL(`./fixtures/${f}`, import.meta.url))).toString());
 const angle = (a: number, b: number) => Math.abs(((a - b + 540) % 360) - 180);
@@ -110,11 +111,31 @@ describe("ラヒリのアヤナムサ", () => {
   });
 });
 
-describe("数秘術: 出典ページの計算例", () => {
-  const lifePath = (y: number, m: number, d: number) => reduceNumber(reduceNumber(y).value + reduceNumber(m).value + reduceNumber(d).value).value;
-  it("1990年8月12日は3", () => expect(lifePath(1990, 8, 12)).toBe(3));
-  it("1983年11月22日は9(11と22を途中で保持)", () => expect(lifePath(1983, 11, 22)).toBe(9));
-  it("1998年10月15日は7", () => expect(lifePath(1998, 10, 15)).toBe(7));
+describe("数秘術: 全桁を足す方式", () => {
+  const life = async (date: string) => {
+    const r = await calculate(norm({ date, timeAccuracy: "unknown" }), engine, ["numerology"]);
+    return r.numerology!.data as NumerologyData;
+  };
+  it("出典(bis)の計算例: 1999年12月26日は 39 → 12 → 3", async () => {
+    const n = await life("1999-12-26");
+    expect(n.sumTrace).toEqual([39, 12, 3]);
+    expect(n.lifePath).toBe(3);
+  });
+  it.each([["1970-02-03", 22, [22]], ["1980-09-06", 33, [33]], ["1991-07-02", 11, [29, 11]]])("%s は途中や最後のマスターナンバーで止まる", async (date, want, trace) => {
+    const n = await life(date as string);
+    expect(n.lifePath).toBe(want);
+    expect(n.sumTrace).toEqual(trace);
+  });
+  it("年月日を別々に還元する方式と結果が異なる例", async () => {
+    // 別々に還元すると 9+8+5=22 だが、全桁の合計は 31 → 4
+    const n = await life("1980-08-23");
+    expect(n.digits.join("")).toBe("19800823");
+    expect(n.sumTrace).toEqual([31, 4]);
+  });
+  it.each([[11, 11], [22, 22], [29, 11], [19, 1], [14, 5]])("誕生数: %i日は %i(出典の才能数の規則)", async (day, want) => {
+    const n = await life(`2000-01-${String(day).padStart(2, "0")}`);
+    expect(n.birthday).toBe(want);
+  });
 });
 
 describe("日本の夏時間: 法律の実施期間", () => {
