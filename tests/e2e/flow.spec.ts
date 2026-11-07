@@ -35,7 +35,8 @@ test("詳細は解説準備中でも動き、辞典と公式への案内があ�
   await expect(page.getByRole("heading", { name: /^第38の鍵/ })).toBeVisible();
   await expect(page.getByRole("link", { name: "第38の鍵を64卦辞典で読む" })).toHaveAttribute("href", /iching\/#ich-hex-38$/);
   await expect(page.getByRole("link", { name: "公式サイト" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "個別セッションについて" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "個別コーチングについて見る" })).toHaveAttribute("href", /session\/coaching-session\/$/);
+  await expect(page.getByRole("link", { name: "お問い合わせ" })).toHaveAttribute("href", /inquiry\/$/);
   await page.goBack();
   await expect(page.getByRole("heading", { level: 1, name: "計算結果の概要" })).toBeVisible();
 });
@@ -209,6 +210,29 @@ test("すべての結果と体系別の結果をコピーできる", async ({ pa
   expect(all).toContain("出生地: 東京都千代田区");
   await expect(page.getByText("コピーには生年月日、時刻、出生地と解説の本文が含まれます。")).toBeVisible();
 
+  await expect(page.getByText("コピーしてAIでの分析などでご活用ください。")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AI鑑定用プロンプト生成" })).toBeVisible();
+  const patterns: [string, string][] = [["総合的な鑑定", "総合的に鑑定"], ["占術ごとの鑑定", "占術ごとに分けて"], ["魂の目的とカルマ的な課題", "カルマ的な課題を読み解いて"], ["人生の変曲点と1年ごとの運勢", "1年ごとの運勢を読み解いて"], ["7年周期の振り返り", "一度に1つだけ質問"]];
+  for (const [name, phrase] of patterns) {
+    await page.getByRole("button", { name }).click();
+    await expect.poll(last).toContain(phrase);
+    // 完了の案内が次のボタンに隠れないこと
+    const status = page.locator(".prompt-buttons .copy-status").filter({ hasText: "コピーしました" }).first();
+    await expect(status).toBeVisible();
+    const overlaps = await status.evaluate((el) => {
+      const a = el.getBoundingClientRect();
+      return Array.from(document.querySelectorAll(".prompt-buttons .copy-btn")).filter((b) => {
+        const r = b.getBoundingClientRect();
+        return a.left < r.right && r.left < a.right && a.top < r.bottom && r.top < a.bottom;
+      }).length;
+    });
+    expect(overlaps).toBe(0);
+    const prompt = await last();
+    expect(prompt).toContain("# 鑑定内容");
+    expect(prompt).toContain("生年月日: 2000-01-01");
+    expect(prompt).toContain("■ 数秘術");
+  }
+
   await page.getByRole("button", { name: "西洋占星術の分析結果をコピー" }).click();
   const card = await last();
   expect(card).toContain("■ 西洋占星術");
@@ -220,6 +244,33 @@ test("すべての結果と体系別の結果をコピーできる", async ({ pa
   expect(tab).toContain("■ インド占星術");
   expect(tab).toContain("スヴァーティー");
   expect(tab).not.toContain("■ 数秘術");
+  await page.getByRole("button", { name: "インド占星術の鑑定" }).click();
+  await expect(page.getByText("プロンプトと鑑定内容をコピーしました。")).toBeVisible();
+  const tabPrompt = await last();
+  expect(tabPrompt).toContain("占術ごとに分けて");
+  expect(tabPrompt).toContain("■ インド占星術");
+  expect(tabPrompt).not.toContain("■ 数秘術");
+});
+
+test("結果の画面にセッションの案内があり、コピーの文章には入らない", async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as unknown as { copied: string[] }).copied = [];
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (t: string) => { (window as unknown as { copied: string[] }).copied.push(t); } } });
+  });
+  await toResults(page, SYNTHETIC);
+  for (const tab of ["概要", "遺伝子易経", "西洋占星術", "インド占星術", "数秘術"]) {
+    await page.getByRole("navigation", { name: "体系の切り替え" }).getByRole("link", { name: tab, exact: true }).click();
+    await expect(page.getByRole("heading", { name: "知ったことを、現実の変化につなげるために" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "個別コーチングについて見る" })).toHaveAttribute("href", /session\/coaching-session\/$/);
+    await expect(page.locator(".session-invite").getByRole("link", { name: "お問い合わせ" })).toHaveAttribute("href", /inquiry\/$/);
+  }
+  await page.getByRole("navigation", { name: "体系の切り替え" }).getByRole("link", { name: "概要", exact: true }).click();
+  await page.getByRole("button", { name: "すべての分析結果をコピー" }).click();
+  await page.getByRole("button", { name: "総合的な鑑定" }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { copied: string[] }).copied.length)).toBe(2);
+  const all = await page.evaluate(() => (window as unknown as { copied: string[] }).copied.join("\n"));
+  expect(all).not.toContain("コーチング");
+  expect(all).not.toContain("お問い合わせ");
 });
 
 test("時刻不明の体系にはコピーボタンを出さない", async ({ page }) => {
@@ -229,6 +280,7 @@ test("時刻不明の体系にはコピーボタンを出さない", async ({ pa
   await expect(page.getByRole("button", { name: "西洋占星術の分析結果をコピー" })).toHaveCount(0);
   await page.getByRole("link", { name: "西洋占星術", exact: true }).first().click();
   await expect(page.getByRole("button", { name: /分析結果をコピー/ })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "AI鑑定用プロンプト生成" })).toHaveCount(0);
 });
 
 test("スマホ幅でも横にはみ出さない", async ({ page }) => {

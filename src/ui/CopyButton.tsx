@@ -18,7 +18,7 @@ async function writeClipboard(text: string): Promise<void> {
   }
 }
 
-export function CopyButton({ label, text, primary = false }: { label: string; text: () => string; primary?: boolean }) {
+export function CopyButton({ label, text, primary = false, doneMessage = "クリップボードにコピーしました。" }: { label: string; text: () => string; primary?: boolean; doneMessage?: string }) {
   const [state, setState] = useState<"idle" | "done" | "failed">("idle");
   const timer = useRef<number>();
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -35,7 +35,7 @@ export function CopyButton({ label, text, primary = false }: { label: string; te
   return (
     <span class="copy">
       <button type="button" class={`btn copy-btn ${primary ? "primary" : "secondary"}`} onClick={copy}>{state === "done" ? "コピーしました" : label}</button>
-      <span class="copy-status" role="status">{state === "failed" ? "コピーできませんでした。画面の文字を選択してコピーしてください。" : state === "done" ? "クリップボードにコピーしました。" : ""}</span>
+      <span class="copy-status" role="status">{state === "failed" ? "コピーできませんでした。画面の文字を選択してコピーしてください。" : state === "done" ? doneMessage : ""}</span>
     </span>
   );
 }

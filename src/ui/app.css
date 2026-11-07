@@ -46,6 +46,16 @@ input[type=radio], input[type=checkbox] { width: 20px; height: 20px; margin: 0; 
 .btn.secondary:hover { background: #eef6f7; }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
 .copy-row { margin: 0 0 16px; }
+.session-invite { margin-top: 24px; padding: 18px 18px 14px; background: var(--tint); border-top: 3px solid var(--accent); border-radius: 8px; }
+.session-invite a.btn { text-decoration: none; }
+.session-invite .actions { margin: 14px 0 10px; }
+.prompt-box { margin-top: 14px; padding: 14px 16px; background: var(--tint); border-radius: 8px; }
+.prompt-box .note { margin-bottom: 10px; }
+.prompt-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+.prompt-buttons .copy { display: block; }
+.prompt-buttons .copy-btn { display: flex; width: 100%; }
+.prompt-buttons .copy-status { display: block; margin-top: 4px; }
+.prompt-buttons .copy-status:empty { display: none; }
 .copy-note { margin: 6px 0 0; font-size: 14px; }
 .card-copy { margin: 12px 0 0; }
 .copy { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }

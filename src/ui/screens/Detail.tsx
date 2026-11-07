@@ -2,7 +2,7 @@
 import type { CalcResult } from "../../engine/worker";
 import type { ContentMap, ContentRecord } from "../content";
 import { contentHeading, MODULE_LABELS } from "../labels";
-import { DICTIONARY_URL, SESSION_URL } from "../site";
+import { DICTIONARY_URL, INQUIRY_URL, SESSION_URL } from "../site";
 import { OfficialNote, SettingsTable } from "./Results";
 
 // スフィア別のラインは解説がある場合だけ表示する
@@ -29,8 +29,8 @@ export function DetailScreen({ result, moduleId, itemId, content }: { result: Ca
         </details>
         <section class="card">
           <h2>さらに深めるには</h2>
-          <p>具体的な悩みや日常の選択に即して考えたい方には、個別のセッションがあります。</p>
-          <a href={SESSION_URL} rel="noreferrer">個別セッションについて</a>
+          <p>知ったことを現実の変化につなげたい方に、個別コーチングで伴走します。</p>
+          <p><a href={SESSION_URL} rel="noreferrer">個別コーチングについて見る</a> ／ <a href={INQUIRY_URL} rel="noreferrer">お問い合わせ</a></p>
         </section>
       </div>
     </section>

@@ -5,9 +5,10 @@ import type { NumerologyData } from "../../modules/numerology/index";
 import type { WesternData } from "../../modules/western/index";
 import type { ContentMap } from "../content";
 import { allModulesText, singleModuleText, type BirthSummary } from "../copyText";
+import { ageOn, buildPrompt, PROMPT_ORDER, PROMPT_PATTERNS, type PromptContext, type PromptId } from "../prompts";
 import { CopyButton } from "../CopyButton";
 import { GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows, SUMMARY_ITEMS } from "../labels";
-import { NOT_OFFICIAL, OFFICIAL_URL } from "../site";
+import { INQUIRY_URL, NOT_OFFICIAL, OFFICIAL_URL, SESSION_URL } from "../site";
 
 export function OfficialNote() {
   return <p class="notice">{NOT_OFFICIAL}<a href={OFFICIAL_URL} rel="noreferrer">公式サイト</a>をご覧ください。</p>;
@@ -24,18 +25,56 @@ export function ResultsScreen({ result, tab, time, placeLabel, content, onRestar
         {tabs.map(([id, label]) => <a key={id} href={`#${id}`} aria-current={active === id ? "page" : undefined}>{label}</a>)}
       </nav>
       {result.birth.notes.map((n) => <p key={n} class="notice">{n}</p>)}
-      <div class="copy-row">
-        {active === "overview"
-          ? <CopyButton primary label="すべての分析結果をコピー" text={() => allModulesText(result.modules, summary, content)} />
-          : result.modules[active]!.status !== "unavailable" && <CopyButton primary label={`${MODULE_LABELS[active]}の分析結果をコピー`} text={() => singleModuleText(result.modules[active]!, summary, content)} />}
-        <p class="note copy-note">コピーには生年月日、時刻、出生地と解説の本文が含まれます。</p>
-      </div>
+      {(active === "overview" || result.modules[active]!.status !== "unavailable") && (
+        <div class="copy-row">
+          {active === "overview"
+            ? <CopyButton primary label="すべての分析結果をコピー" text={() => allModulesText(result.modules, summary, content)} />
+            : <CopyButton primary label={`${MODULE_LABELS[active]}の分析結果をコピー`} text={() => singleModuleText(result.modules[active]!, summary, content)} />}
+          <p class="note copy-note">コピーしてAIでの分析などでご活用ください。コピーには生年月日、時刻、出生地と解説の本文が含まれます。貼り付けた内容は、貼り付け先のサービスへ送られます。</p>
+          <section class="prompt-box" aria-labelledby="prompt-title">
+            <h2 id="prompt-title">AI鑑定用プロンプト生成</h2>
+            <p class="note">知りたいことを選ぶと、AIへの指示と鑑定内容をまとめてコピーします。AIに貼り付けてお使いください。</p>
+            <div class="prompt-buttons">
+              {active === "overview"
+                ? PROMPT_ORDER.map((id) => <PromptButton key={id} id={id} label={PROMPT_PATTERNS[id].label} body={() => allModulesText(result.modules, summary, content)} birth={result.birth.isoDate} />)
+                : <PromptButton id="each" label={`${MODULE_LABELS[active]}の鑑定`} body={() => singleModuleText(result.modules[active]!, summary, content)} birth={result.birth.isoDate} />}
+            </div>
+          </section>
+        </div>
+      )}
       {active === "overview"
         ? <Overview result={result} summary={summary} content={content} />
         : <ModuleView module={result.modules[active]!} content={content} />}
+      <SessionInvite />
       <div class="actions"><button type="button" class="btn secondary" onClick={onRestart}>入力をやり直す</button></div>
     </section>
   );
+}
+
+function SessionInvite() {
+  return (
+    <section class="session-invite" aria-labelledby="session-invite-title">
+      <h2 id="session-invite-title">知ったことを、現実の変化につなげるために</h2>
+      <p>自分の傾向や才能がわかっても、「では、明日から何をすればいいのか」で立ち止まることがあります。</p>
+      <p>AIとのやり取りは手軽で便利ですが、自分の言葉で問いかけ続けるうちに、見たい答えに寄っていったり、耳の痛い点を避けたりと、どうしても偏りが生まれることがあります。</p>
+      <p>個別コーチングでは、あなたの傾向、個性、才能を踏まえて、いま向き合っている仕事や人間関係の具体的な場面を対話で整理します。才能を活かせていないと感じる仕事のどの場面を変えるのか、言いにくい相手にどう伝えるのか。次に試すことを一緒に決め、やってみて、その結果を振り返ります。伴走を受けながら、知っていることを少しずつ現実の変化に変えていきます。</p>
+      <div class="actions">
+        <a class="btn primary" href={SESSION_URL} rel="noreferrer">個別コーチングについて見る</a>
+        <a class="btn secondary" href={INQUIRY_URL} rel="noreferrer">お問い合わせ</a>
+      </div>
+      <p class="note">どのプランが合うか迷う場合や、内容についてのご質問は、お問い合わせからお気軽にどうぞ。</p>
+    </section>
+  );
+}
+
+function promptContext(birthIso: string): PromptContext {
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  return { year: now.getFullYear(), age: ageOn(birthIso, today) };
+}
+
+function PromptButton({ id, label, body, birth }: { id: PromptId; label: string; body: () => string; birth: string }) {
+  return <CopyButton label={label} doneMessage="プロンプトと鑑定内容をコピーしました。AIに貼り付けてください。" text={() => buildPrompt(id, body(), promptContext(birth))} />;
 }
 
 function Unavailable({ module }: { module: ModuleResult }) {

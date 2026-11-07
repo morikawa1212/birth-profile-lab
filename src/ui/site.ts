@@ -3,6 +3,7 @@
 export const HP_URL = "https://morikawatakashi.com/";
 export const DICTIONARY_URL = (key: number) => `https://morikawatakashi.com/iching/#ich-hex-${key}`;
 export const SESSION_URL = "https://morikawatakashi.com/session/coaching-session/";
+export const INQUIRY_URL = "https://morikawatakashi.com/inquiry/";
 export const OFFICIAL_URL = "https://genekeys.com/";
 export const NOT_OFFICIAL = "このサイトは公式のものではありません。詳しくは";
 export const SOURCE_URL: string | undefined = import.meta.env.VITE_SOURCE_URL || undefined;
