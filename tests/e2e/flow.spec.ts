@@ -283,6 +283,18 @@ test("時刻不明の体系にはコピーボタンを出さない", async ({ pa
   await expect(page.getByRole("heading", { name: "AI鑑定用プロンプト生成" })).toHaveCount(0);
 });
 
+test("このサイトについて: 運営者の文章を HTML として解釈せず表示する", async ({ page }) => {
+  // 手元の配信物には解説データがないので、応答を差し替えて確かめる
+  await page.route("**/content/ja.json", (r) => r.fulfill({ json: { schemaVersion: 1, records: [{ key: "site.about", locale: "ja", body: "## 見出しA\n\n本文の**強調**と<img src=x onerror=alert(1)>\n\n| 列1 | 列2 |\n|---|---|\n| **値1** | 値2 |", sources: [], rights: { status: "owner_original" }, review: "approved" }] } }));
+  await page.goto("./#about");
+  await expect(page.getByRole("heading", { level: 2, name: "見出しA" })).toBeVisible();
+  await expect(page.locator(".about-article strong").first()).toHaveText("強調");
+  await expect(page.locator(".about-article img")).toHaveCount(0);
+  await expect(page.getByText("<img src=x onerror=alert(1)>", { exact: false })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "値1" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "出生情報の扱い" })).toBeVisible();
+});
+
 test("スマホ幅でも横にはみ出さない", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto("./");

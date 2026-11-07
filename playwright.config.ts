@@ -7,7 +7,9 @@ const remote = process.env.E2E_BASE;
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: true,
-  timeout: 20_000,
+  // 同時に多数のブラウザが暦ファイルを取得すると、計算待ちが10秒ほどに伸びる(実測)
+  timeout: 45_000,
+  expect: { timeout: 15_000 },
   reporter: [["list"]],
   use: { baseURL: remote ?? "http://127.0.0.1:8796/profile-lab/app/", locale: "ja-JP", timezoneId: "Asia/Tokyo" },
   ...(remote ? {} : { webServer: { command: "node tests/e2e/serve.mjs", url: "http://127.0.0.1:8796/profile-lab/app/", reuseExistingServer: false } }),

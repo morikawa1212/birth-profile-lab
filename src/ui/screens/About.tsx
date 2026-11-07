@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { CalcResult } from "../../engine/worker";
+import type { ContentMap } from "../content";
+import { MiniMarkdown } from "../MiniMarkdown";
 import { MODULE_LABELS, MODULE_ORDER } from "../labels";
 import { BUILD_VERSION, HP_URL, NOT_OFFICIAL, OFFICIAL_URL, SOURCE_URL } from "../site";
 import { SettingsTable } from "./Results";
 
-export function AboutScreen({ hasResult, result }: { hasResult: boolean; result: CalcResult | null }) {
+export function AboutScreen({ hasResult, result, content }: { hasResult: boolean; result: CalcResult | null; content: ContentMap }) {
+  const about = content.get("site.about")?.body;
   return (
     <section>
       <p><a href={hasResult ? "#overview" : "#"}>{hasResult ? "結果へ戻る" : "入力へ戻る"}</a></p>
       <h1 tabIndex={-1}>このサイトについて</h1>
+      {about && <article class="about-article"><MiniMarkdown text={about} /></article>}
       <div class="stack">
         <section class="card">
           <h2>出生情報の扱い</h2>

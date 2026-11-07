@@ -100,7 +100,7 @@ export function App() {
         )}
         {view === "results" && result && <ResultsScreen result={result} tab={route || "overview"} {...(draft?.time ? { time: draft.time } : {})} placeLabel={placeLabel} content={content} onRestart={restart} />}
         {view === "detail" && result && <DetailScreen result={result} moduleId={route!} itemId={itemId!} content={content} />}
-        {view === "about" && <AboutScreen hasResult={!!result} result={result} />}
+        {view === "about" && <AboutScreen hasResult={!!result} result={result} content={content} />}
       </main>
       <footer class="site-footer">
         <p>入力した生年月日・時刻・出生地は、この端末の中だけで計算します。送信も記録もしません。</p>
