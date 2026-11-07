@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { calculate } from "../src/engine/calculate";
 import { allModulesText, singleModuleText } from "../src/ui/copyText";
-import { ageOn, buildPrompt, PROMPT_ORDER, promptHead } from "../src/ui/prompts";
+import { ageOn, buildPrompt, buildSinglePrompt, PROMPT_ORDER, promptHead, singlePromptHead } from "../src/ui/prompts";
 import type { ContentMap, ContentRecord } from "../src/ui/content";
 import { BASE, BASE_UTC, engine, norm } from "./helpers";
 
@@ -91,6 +91,37 @@ describe("AI鑑定用プロンプト", () => {
     for (const x of ["一度に1つだけ質問", "35〜42歳", "満37歳", "飛ばしてよい", "専門家", "決めつけない", "魂の知能指数"]) expect(t, x).toContain(x);
     expect(t).not.toContain("# 相談したいこと");
     expect(promptHead("seven_years", { year: 2026, age: 7 })).toContain("7〜14歳の周期まで");
+  });
+  it.each([["gene_keys", "遺伝子易経", ["心の闇", "パールの道"]], ["western", "西洋占星術", ["ハウス", "アスペクト"]], ["vedic", "インド占星術", ["ラグナ", "ナクシャトラ"]], ["numerology", "数秘術", ["ライフパス", "誕生数"]]] as const)("占術別(%s): その占術だけを指示する", (id, name, words) => {
+    const t = singlePromptHead(id);
+    expect(t).toContain(`あなたは${name}に詳しい鑑定士です`);
+    for (const w of words) expect(t, w).toContain(w);
+    for (const other of ["遺伝子易経", "西洋占星術", "インド占星術", "数秘術"].filter((o) => o !== name)) expect(t, other).not.toContain(other);
+    expect(t).not.toContain("占術ごとに");
+    expect(t).toContain("他の占術の内容は混ぜない");
+    expect(buildSinglePrompt(id, "本文").endsWith("# 鑑定内容\n本文")).toBe(true);
+  });
+  it("プロンプト用の本文は鍵の解説全文を省き、要約とスフィアの解説を残す", async () => {
+    const birth = norm(BASE, BASE_UTC);
+    const r = await calculate(birth, engine);
+    const sphere = { key: "gk.sphere.lifes_work", locale: "ja", body: "スフィアの本文", sources: [], rights: { status: "owner_original" }, review: "approved" } as ContentRecord;
+    const c: ContentMap = new Map([[sections.key, sections], [sphere.key, sphere]]);
+    const s = { birth, time: "12:00", placeLabel: "東京都千代田区" };
+    const compact = singleModuleText(r.gene_keys!, s, c, { compact: true });
+    expect(compact).toContain("ライフワーク: 38.1(サンプルA → B → C)");
+    expect(compact).toContain("スフィアの本文");
+    expect(compact).not.toContain("本文は入れない");
+    expect(compact).not.toContain("ヒントの本文");
+    // 通常のコピーは全文のまま
+    const full = singleModuleText(r.gene_keys!, s, c);
+    expect(full).toContain("本文は入れない");
+    expect(full).toContain("ヒントの本文");
+    expect(allModulesText(r, s, c, { compact: true })).not.toContain("ヒントの本文");
+  });
+  it("鍵の要約に沿って補う指示は遺伝子易経を含むプロンプトだけに入る", () => {
+    expect(singlePromptHead("gene_keys")).toContain("要約に沿って補い");
+    expect(singlePromptHead("western")).not.toContain("要約に沿って");
+    for (const id of PROMPT_ORDER) expect(promptHead(id, ctx), id).toContain("要約に沿って補い");
   });
   it("満年齢は誕生日の前後で変わる", () => {
     expect(ageOn("2000-06-15", "2026-06-14")).toBe(25);

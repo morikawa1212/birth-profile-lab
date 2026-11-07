@@ -247,7 +247,9 @@ test("すべての結果と体系別の結果をコピーできる", async ({ pa
   await page.getByRole("button", { name: "インド占星術の鑑定" }).click();
   await expect(page.getByText("プロンプトと鑑定内容をコピーしました。")).toBeVisible();
   const tabPrompt = await last();
-  expect(tabPrompt).toContain("占術ごとに分けて");
+  expect(tabPrompt).toContain("あなたはインド占星術に詳しい鑑定士です");
+  expect(tabPrompt).not.toContain("占術ごとに分けて");
+  expect(tabPrompt).not.toContain("遺伝子易経");
   expect(tabPrompt).toContain("■ インド占星術");
   expect(tabPrompt).not.toContain("■ 数秘術");
 });

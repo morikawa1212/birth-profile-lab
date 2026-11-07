@@ -5,7 +5,7 @@ import type { NumerologyData } from "../../modules/numerology/index";
 import type { WesternData } from "../../modules/western/index";
 import type { ContentMap } from "../content";
 import { allModulesText, singleModuleText, type BirthSummary } from "../copyText";
-import { ageOn, buildPrompt, PROMPT_ORDER, PROMPT_PATTERNS, type PromptContext, type PromptId } from "../prompts";
+import { ageOn, buildPrompt, buildSinglePrompt, PROMPT_ORDER, PROMPT_PATTERNS, type PromptContext } from "../prompts";
 import { CopyButton } from "../CopyButton";
 import { GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows, SUMMARY_ITEMS } from "../labels";
 import { DICTIONARY_SEARCH_URL, INQUIRY_URL, NOT_OFFICIAL, OFFICIAL_URL, SESSION_URL } from "../site";
@@ -36,8 +36,8 @@ export function ResultsScreen({ result, tab, time, placeLabel, content, onRestar
             <p class="note">知りたいことを選ぶと、AIへの指示と鑑定内容をまとめてコピーします。AIに貼り付けてお使いください。</p>
             <div class="prompt-buttons">
               {active === "overview"
-                ? PROMPT_ORDER.map((id) => <PromptButton key={id} id={id} label={PROMPT_PATTERNS[id].label} body={() => allModulesText(result.modules, summary, content)} birth={result.birth.isoDate} />)
-                : <PromptButton id="each" label={`${MODULE_LABELS[active]}の鑑定`} body={() => singleModuleText(result.modules[active]!, summary, content)} birth={result.birth.isoDate} />}
+                ? PROMPT_ORDER.map((id) => <PromptButton key={id} label={PROMPT_PATTERNS[id].label} text={() => buildPrompt(id, allModulesText(result.modules, summary, content, { compact: true }), promptContext(result.birth.isoDate))} />)
+                : <PromptButton label={`${MODULE_LABELS[active]}の鑑定`} text={() => buildSinglePrompt(active, singleModuleText(result.modules[active]!, summary, content, { compact: true }))} />}
             </div>
           </section>
         </div>
@@ -83,8 +83,8 @@ function promptContext(birthIso: string): PromptContext {
   return { year: now.getFullYear(), age: ageOn(birthIso, today) };
 }
 
-function PromptButton({ id, label, body, birth }: { id: PromptId; label: string; body: () => string; birth: string }) {
-  return <CopyButton label={label} doneMessage="プロンプトと鑑定内容をコピーしました。AIに貼り付けてください。" text={() => buildPrompt(id, body(), promptContext(birth))} />;
+function PromptButton({ label, text }: { label: string; text: () => string }) {
+  return <CopyButton label={label} doneMessage="プロンプトと鑑定内容をコピーしました。AIに貼り付けてください。" text={text} />;
 }
 
 function Unavailable({ module }: { module: ModuleResult }) {

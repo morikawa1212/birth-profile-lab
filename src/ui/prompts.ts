@@ -19,6 +19,7 @@ const RULES = [
   "断定せず、傾向や読み方の一つとして伝えてください。",
   "計算されていない項目には触れないでください。",
 ];
+const KEY_NOTE = "遺伝子易経の鍵は、心の闇 → 天の才 → 天の光の要約だけを載せています。詳しい意味はこの要約に沿って補い、補った部分は一般的な解釈であると明記してください。";
 const NOT_PROOF = "複数の体系に同じテーマが出ても、同じ出生情報から求めているので、証明としては扱わないでください。";
 
 const ASK = `# 相談したいこと
@@ -129,11 +130,67 @@ export const PROMPT_ORDER: readonly PromptId[] = ["overall", "each", "soul", "ti
 export function promptHead(id: PromptId, context: PromptContext): string {
   const p = PROMPT_PATTERNS[id];
   const steps = typeof p.steps === "function" ? p.steps(context) : p.steps;
-  const rules = p.replaceRules ?? [...RULES, ...(p.extraRules ?? [])];
+  const rules = [...(p.replaceRules ?? [...RULES, ...(p.extraRules ?? [])]), KEY_NOTE];
   return [p.intro(context), `# 進め方\n${list(steps, true)}`, `# 守ること\n${list(rules)}`, ...(p.ask ? [ASK] : [])].join("\n\n");
 }
 
 export const buildPrompt = (id: PromptId, body: string, context: PromptContext): string => `${promptHead(id, context)}\n\n# 鑑定内容\n${body}`;
+
+/** 占術ごとのタブで使う、その占術だけのプロンプト */
+const SINGLE: Readonly<Record<string, { name: string; steps: readonly string[] }>> = {
+  gene_keys: {
+    name: "遺伝子易経",
+    steps: [
+      "変容活性化の道、ヴィーナスの道、パールの道の順に、各スフィアの鍵とラインを読み解いてください。",
+      "主要な鍵について、心の闇がどのように現れやすく、天の才や天の光へどう開いていけるかを示してください。",
+      "才能、課題、人生のテーマをまとめてください。",
+      "日常で試せる具体的な提案を3つ挙げてください。",
+      "観照するための問いを3つ挙げてください。",
+    ],
+  },
+  western: {
+    name: "西洋占星術",
+    steps: [
+      "太陽、月、ASC、MCから、基本的な性質と社会との関わり方を読み解いてください。",
+      "各天体の星座とハウスを読み解いてください。",
+      "主要なアスペクトから、内面の協力関係と葛藤を読み解いてください。",
+      "才能、課題、人生のテーマをまとめてください。",
+      "日常で試せる具体的な提案を3つ挙げてください。",
+    ],
+  },
+  vedic: {
+    name: "インド占星術",
+    steps: [
+      "ラグナから、基本的な性質と人生の出発点を読み解いてください。",
+      "月の星座、室、ナクシャトラ、パーダから、心の傾向を読み解いてください。",
+      "各惑星とラーフ、ケートゥの星座と室を読み解いてください。",
+      "才能、課題、人生のテーマをまとめてください。",
+      "日常で試せる具体的な提案を3つ挙げてください。",
+    ],
+  },
+  numerology: {
+    name: "数秘術",
+    steps: [
+      "ライフパスから、人生全体のテーマと基本的な傾向を読み解いてください。",
+      "誕生数から、生まれ持った資質を読み解いてください。",
+      "ライフパスと誕生数の組み合わせから、才能と課題を示してください。",
+      "日常で試せる具体的な提案を3つ挙げてください。",
+    ],
+  },
+};
+
+export function singlePromptHead(moduleId: string): string {
+  const m = SINGLE[moduleId]!;
+  const rules = RULES.map((r) => (r.startsWith("読み解きごとに") ? "読み解きごとに、どの項目に基づくかを示してください。" : r));
+  return [
+    `あなたは${m.name}に詳しい鑑定士です。以下の【鑑定内容】をもとに、${m.name}の観点から鑑定してください。`,
+    `# 進め方\n${list(m.steps, true)}`,
+    `# 守ること\n${list([...rules, ...(moduleId === "gene_keys" ? [KEY_NOTE] : []), `${m.name}の考え方の中で読み解き、他の占術の内容は混ぜないでください。`])}`,
+    ASK,
+  ].join("\n\n");
+}
+
+export const buildSinglePrompt = (moduleId: string, body: string): string => `${singlePromptHead(moduleId)}\n\n# 鑑定内容\n${body}`;
 
 /** 誕生日を過ぎているかを含めた満年齢 */
 export function ageOn(birthIso: string, todayIso: string): number {

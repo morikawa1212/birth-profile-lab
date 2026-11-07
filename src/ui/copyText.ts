@@ -25,9 +25,14 @@ function itemLine(item: ResultItem, content: ContentMap): string {
   return `${item.label}: ${item.display}${summary ? `(${summary})` : ""}`;
 }
 
+export interface TextOptions {
+  /** 鍵の解説全文を省く。AI へ渡すプロンプトでは長くなりすぎるため、要約だけを残す */
+  compact?: boolean;
+}
+
 /** 体系で使われた解説を、重複を除いて出現順にまとめる */
-function explanationText(m: ModuleResult, content: ContentMap): string[] {
-  const keys = [...new Set(m.items.flatMap((i) => i.contentKeys))];
+function explanationText(m: ModuleResult, content: ContentMap, options: TextOptions): string[] {
+  const keys = [...new Set(m.items.flatMap((i) => i.contentKeys))].filter((k) => !(options.compact && k.startsWith("gk.key.")));
   const blocks: string[] = [];
   for (const key of keys) {
     const r = content.get(key);
@@ -40,7 +45,7 @@ function explanationText(m: ModuleResult, content: ContentMap): string[] {
   return blocks.length ? ["", "〈解説〉", blocks.join("\n\n")] : [];
 }
 
-export function moduleText(m: ModuleResult, content: ContentMap): string {
+export function moduleText(m: ModuleResult, content: ContentMap, options: TextOptions = {}): string {
   const lines = [`■ ${MODULE_LABELS[m.moduleId] ?? m.moduleId}`];
   if (m.status === "unavailable") {
     lines.push(`${(m.missing ?? []).map((x) => MISSING_LABELS[x]).join("、")}がないため計算していません。`);
@@ -59,14 +64,14 @@ export function moduleText(m: ModuleResult, content: ContentMap): string {
     lines.push(`計算の過程: ${n.digits.join(" + ")} = ${n.sumTrace.join(" → ")}`);
   }
   lines.push(`計算方法: ${settingRows(m.settings).map(([k, v]) => `${k} ${v}`).join("、")}`);
-  lines.push(...explanationText(m, content));
+  lines.push(...explanationText(m, content, options));
   return lines.join("\n");
 }
 
-export function singleModuleText(m: ModuleResult, summary: BirthSummary, content: ContentMap): string {
-  return [birthText(summary), moduleText(m, content), SITE_LINE].join("\n\n");
+export function singleModuleText(m: ModuleResult, summary: BirthSummary, content: ContentMap, options: TextOptions = {}): string {
+  return [birthText(summary), moduleText(m, content, options), SITE_LINE].join("\n\n");
 }
 
-export function allModulesText(modules: Readonly<Record<string, ModuleResult>>, summary: BirthSummary, content: ContentMap): string {
-  return [birthText(summary), ...MODULE_ORDER.map((id) => moduleText(modules[id]!, content)), SITE_LINE].join("\n\n");
+export function allModulesText(modules: Readonly<Record<string, ModuleResult>>, summary: BirthSummary, content: ContentMap, options: TextOptions = {}): string {
+  return [birthText(summary), ...MODULE_ORDER.map((id) => moduleText(modules[id]!, content, options)), SITE_LINE].join("\n\n");
 }
