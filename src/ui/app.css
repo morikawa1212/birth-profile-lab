@@ -98,6 +98,11 @@ a.dictionary-link { text-decoration: none; min-height: 44px; padding: 8px 18px; 
 .summary { flex-basis: 100%; color: var(--sub); font-size: 14.5px; }
 .draft-tag { display: inline-block; margin: 0 0 8px; padding: 0 8px; background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 4px; font-size: 13px; }
 .site-footer { padding: 18px 20px 28px; background: var(--tint); font-size: 14.5px; color: var(--sub); }
+.support-box { margin: 0 0 20px; padding: 0 0 20px; border-bottom: 1px solid currentColor; }
+.support-box h2 { margin: 0 0 6px; font-size: 1.05rem; }
+.support-box p { margin: 0 0 12px; }
+.support-link { display: inline-block; padding: 11px 32px; border-radius: 100px; background: #2882a7; color: #fff; font-weight: 700; text-decoration: none; }
+.support-link:hover { background: #1f6a88; color: #fff; }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-bottom: 8px; }
 .version { margin: 0; }
 @media (max-width: 480px) {

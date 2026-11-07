@@ -103,6 +103,11 @@ export function App() {
         {view === "about" && <AboutScreen hasResult={!!result} result={result} content={content} />}
       </main>
       <footer class="site-footer">
+        <section class="support-box" aria-labelledby="site-support">
+          <h2 id="site-support">このサイトを応援する</h2>
+          <p>このサイトは無料で公開しています。役に立ったと感じたら、応援していただけるとうれしいです。OFUSE の登録なしで、金額を選んで送れます。</p>
+          <a class="support-link" href="https://ofuse.me/o?uid=107888" target="_blank" rel="noopener noreferrer">応援する</a>
+        </section>
         <p>入力した生年月日・時刻・出生地は、この端末の中だけで計算します。送信も記録もしません。</p>
         <nav aria-label="サイトの情報">
           <a href="#about">このサイトについて</a>
