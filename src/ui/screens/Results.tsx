@@ -8,7 +8,7 @@ import { allModulesText, singleModuleText, type BirthSummary } from "../copyText
 import { ageOn, buildPrompt, PROMPT_ORDER, PROMPT_PATTERNS, type PromptContext, type PromptId } from "../prompts";
 import { CopyButton } from "../CopyButton";
 import { GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows, SUMMARY_ITEMS } from "../labels";
-import { INQUIRY_URL, NOT_OFFICIAL, OFFICIAL_URL, SESSION_URL } from "../site";
+import { DICTIONARY_SEARCH_URL, INQUIRY_URL, NOT_OFFICIAL, OFFICIAL_URL, SESSION_URL } from "../site";
 
 export function OfficialNote() {
   return <p class="notice">{NOT_OFFICIAL}<a href={OFFICIAL_URL} rel="noreferrer">公式サイト</a>をご覧ください。</p>;
@@ -49,6 +49,12 @@ export function ResultsScreen({ result, tab, time, placeLabel, content, onRestar
       <div class="actions"><button type="button" class="btn secondary" onClick={onRestart}>入力をやり直す</button></div>
     </section>
   );
+}
+
+/** 遺伝子易経の11の配置を辞典で開く。コアと天職は同じ配置なので1つにまとめる */
+function DictionaryLink({ module: m }: { module: ModuleResult }) {
+  const values = m.items.filter((i) => i.id !== "core").map((i) => i.display);
+  return <a class="btn secondary dictionary-link" href={DICTIONARY_SEARCH_URL(values)} target="_blank" rel="noopener noreferrer">解説辞典で詳しく見る<span class="sr-note">(新しいタブで開きます)</span></a>;
 }
 
 function SessionInvite() {
@@ -105,6 +111,7 @@ function Overview({ result, summary, content }: { result: CalcResult; summary: B
             {m.status === "unavailable" ? <Unavailable module={m} /> : (
               <>
                 <ul class="items">{items.map((i) => <ItemRow key={i.id} moduleId={id} item={i} content={content} />)}</ul>
+                {id === "gene_keys" && <div class="copy-row card-copy"><DictionaryLink module={m} /></div>}
                 <div class="copy-row card-copy"><CopyButton label={`${MODULE_LABELS[id]}の分析結果をコピー`} text={() => singleModuleText(m, summary, content)} /></div>
               </>
             )}
@@ -124,6 +131,7 @@ function ModuleView({ module: m, content }: { module: ModuleResult; content: Con
     <div class="stack">
       {m.moduleId === "gene_keys" && <OfficialNote />}
       {m.status === "unavailable" && <Unavailable module={m} />}
+      {m.moduleId === "gene_keys" && m.status !== "unavailable" && <div><DictionaryLink module={m} /></div>}
       {m.moduleId === "western" && m.data ? <HouseNote data={m.data as WesternData} /> : null}
       {m.moduleId === "vedic" && m.data && !m.items.some((i) => i.id === "lagna") ? <p class="notice">出生地がないため、ラグナと室は保留しています。</p> : null}
       {[...groups].map(([g, items]) => (

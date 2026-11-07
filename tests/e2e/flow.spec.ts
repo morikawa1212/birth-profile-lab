@@ -273,6 +273,30 @@ test("結果の画面にセッションの案内があり、コピーの文章�
   expect(all).not.toContain("お問い合わせ");
 });
 
+test("解説辞典へ11の番号を渡す", async ({ page }) => {
+  await toResults(page, SYNTHETIC);
+  const want = "38.1 39.1 48.3 21.3 29.3 34.2 30.4 29.5 26.6 27.1 42.5";
+  for (const scope of ["overview", "gene_keys"]) {
+    if (scope === "gene_keys") await page.getByRole("navigation", { name: "体系の切り替え" }).getByRole("link", { name: "遺伝子易経", exact: true }).click();
+    const link = page.getByRole("link", { name: /解説辞典で詳しく見る/ });
+    await expect(link).toHaveCount(1);
+    const url = new URL((await link.getAttribute("href"))!);
+    expect(url.origin + url.pathname).toBe("https://morikawatakashi.com/iching/");
+    // 番号はサーバーや GA4 に渡らない # で渡す
+    expect(url.search).toBe("");
+    expect(decodeURIComponent(url.hash)).toBe(`#q=${want}`);
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", /noreferrer/);
+  }
+});
+
+test("時刻不明では解説辞典へのボタンを出さない", async ({ page }) => {
+  await toConfirm(page, { y: "2000", m: "1", d: "1", accuracy: "不明" });
+  await page.getByRole("button", { name: "この条件で計算する" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "計算結果の概要" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /解説辞典で詳しく見る/ })).toHaveCount(0);
+});
+
 test("時刻不明の体系にはコピーボタンを出さない", async ({ page }) => {
   await toConfirm(page, { y: "2000", m: "1", d: "1", accuracy: "不明" });
   await page.getByRole("button", { name: "この条件で計算する" }).click();
