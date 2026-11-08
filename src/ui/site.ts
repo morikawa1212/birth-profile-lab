@@ -9,7 +9,8 @@ export const DICTIONARY_URL = (key: number) => `https://morikawatakashi.com/ichi
 export const DICTIONARY_SEARCH_URL = (values: readonly string[]) => `https://morikawatakashi.com/iching/#q=${encodeURIComponent(values.join(" "))}`;
 export const SESSION_URL = "https://morikawatakashi.com/session/coaching-session/";
 export const INQUIRY_URL = "https://morikawatakashi.com/inquiry/";
-export const OFFICIAL_URL = "https://genekeys.com/";
+/** 遺伝子易経の日本の公式サイト(Gene Keys Japan) */
+export const OFFICIAL_URL = "https://genekeys-japan.jp/";
 export const NOT_OFFICIAL = "このサイトは公式のものではありません。詳しくは";
 export const SOURCE_URL: string | undefined = import.meta.env.VITE_SOURCE_URL || undefined;
 export const BUILD_VERSION: string = import.meta.env.VITE_BUILD_VERSION || "開発版";

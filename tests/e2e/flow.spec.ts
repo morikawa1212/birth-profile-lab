@@ -16,7 +16,7 @@ test("入力から結果まで、Python 基準と同じ値が表示される", a
   for (const [label, value] of Object.entries(want)) {
     await expect(page.getByRole("link", { name: `${label} ${value}` })).toBeVisible();
   }
-  await expect(page.getByRole("link", { name: "公式サイト" })).toHaveAttribute("href", "https://genekeys.com/");
+  await expect(page.getByRole("link", { name: "公式サイト(日本語)" })).toHaveAttribute("href", "https://genekeys-japan.jp/");
   await page.getByRole("link", { name: "インド占星術", exact: true }).click();
   await expect(page.getByText("スヴァーティー 第3パーダ")).toBeVisible();
   await page.getByRole("link", { name: "西洋占星術", exact: true }).click();
@@ -34,7 +34,7 @@ test("詳細は解説準備中でも動き、辞典と公式への案内があ�
   if (!process.env.E2E_BASE) await expect(page.getByText("解説準備中").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: /^第38の鍵/ })).toBeVisible();
   await expect(page.getByRole("link", { name: "第38の鍵を64卦辞典で読む" })).toHaveAttribute("href", /iching\/#ich-hex-38$/);
-  await expect(page.getByRole("link", { name: "公式サイト" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "公式サイト(日本語)" })).toBeVisible();
   await expect(page.getByRole("link", { name: "個別コーチングについて見る" })).toHaveAttribute("href", /session\/coaching-session\/$/);
   await expect(page.getByRole("link", { name: "お問い合わせ" })).toHaveAttribute("href", /inquiry\/$/);
   await page.goBack();

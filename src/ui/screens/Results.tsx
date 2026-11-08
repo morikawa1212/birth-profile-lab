@@ -16,7 +16,7 @@ import { GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows,
 import { DICTIONARY_SEARCH_URL, INQUIRY_URL, NOT_OFFICIAL, OFFICIAL_URL, SESSION_URL } from "../site";
 
 export function OfficialNote() {
-  return <p class="notice">{NOT_OFFICIAL}<a href={OFFICIAL_URL} rel="noreferrer">公式サイト</a>をご覧ください。</p>;
+  return <p class="notice">{NOT_OFFICIAL}<a href={OFFICIAL_URL} rel="noreferrer">公式サイト(日本語)</a>をご覧ください。</p>;
 }
 
 export function ResultsScreen({ result, tab, time, placeLabel, content, onRestart }: { result: CalcResult; tab: string; time?: string; placeLabel: string; content: ContentMap; onRestart: () => void }) {

@@ -132,8 +132,8 @@ export function buildSynthesis(d: EsotericData, content: ContentMap): SynthesisS
     if ((asc.rulers.esoteric === "moon" || asc.rulers.hierarchical === "moon")) {
       const scheme = asc.rulers.esoteric === "moon" ? "esoteric" : "hierarchical";
       const note = asc.position.signId === "virgo"
-        ? "秘教占星学の乙女座の章では、秘教的支配星の月をヴァルカンと並べて示し、第4光線の月が第1光線の働きを表すとされています(PDF p.127)。"
-        : "秘教占星学では、水瓶座に関わる文脈で、月が天王星や海王星を覆うとされています(PDF p.68, 155)。";
+        ? "秘教占星学の乙女座の章では、秘教的支配星の月をヴァルカンと並べて示し、第4光線の月が第1光線の働きを表すとされています。"
+        : "秘教占星学では、水瓶座に関わる文脈で、月が天王星や海王星を覆うとされています。";
       ruler.push(P(`ASCの${RULER_LABELS[scheme]}は月です。${note}ここでの月は、過去の条件づけとしての月とは別の文脈で扱われています。`, "source", [ascRef]));
     }
   } else {

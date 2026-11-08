@@ -20,7 +20,7 @@ export function AboutScreen({ hasResult, result, content }: { hasResult: boolean
         </section>
         <section class="card">
           <h2>遺伝子易経について</h2>
-          <p>{NOT_OFFICIAL}<a href={OFFICIAL_URL} rel="noreferrer">公式サイト</a>をご覧ください。Gene Keys は Gene Keys Publishing Ltd. の登録商標です。</p>
+          <p>{NOT_OFFICIAL}<a href={OFFICIAL_URL} rel="noreferrer">公式サイト(日本語)</a>をご覧ください。Gene Keys は Gene Keys Publishing Ltd. の登録商標です。</p>
         </section>
         <section class="card">
           <h2>結果が他のサイトや体系と異なる理由</h2>
