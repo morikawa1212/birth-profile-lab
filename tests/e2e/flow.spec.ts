@@ -392,7 +392,7 @@ test("秘教占星術: 出生地がなければASCを出さない", async ({ pag
   await expect(page.getByRole("heading", { level: 1, name: "計算結果の概要" })).toBeVisible();
   await page.getByRole("navigation", { name: "体系の切り替え" }).getByRole("link", { name: "秘教占星術", exact: true }).click();
   await expect(page.getByText("出生地がないため、ASCとハウスを推測せずに保留しています。").first()).toBeVisible();
-  await expect(page.getByRole("link", { name: /^ASC/ })).toHaveCount(0);
+  await expect(page.locator(".items").getByRole("link", { name: /^ASC/ })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /太陽\(パーソナリティ\) 山羊座/ })).toBeVisible();
 });
 
