@@ -411,7 +411,8 @@ test("西洋・インド・遺伝子易経にもチャートがあり、選ぶ�
   await page.getByRole("group", { name: /ラーシ・チャート/ }).getByRole("button", { name: /^月/ }).click();
   await expect(page.locator(".body-panel")).toContainText("月");
   await nav.getByRole("link", { name: "遺伝子易経", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "3つの道" })).toBeVisible();
+  await expect(page.getByRole("img", { name: /遺伝子易経のチャート/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^天職・コア 26\.6$/ })).toBeVisible();
   await page.getByRole("button", { name: /ライフワーク\s*38\.1/ }).click();
   await expect(page.locator(".body-panel")).toContainText("ライフワーク: 38.1");
 });

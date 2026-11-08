@@ -89,43 +89,74 @@ export function VedicChart({ module: m, content }: { module: ModuleResult; conte
   );
 }
 
-/** 遺伝子易経の3つの道を、スフィアのつながりとして描く(このサイト独自の図) */
-const PATHS: readonly { id: string; label: string; spheres: readonly string[] }[] = [
-  { id: "activation", label: "変容活性化の道", spheres: ["lifes_work", "evolution", "radiance", "purpose"] },
-  { id: "venus", label: "ヴィーナスの道", spheres: ["attraction", "iq", "eq", "sq", "core"] },
-  { id: "pearl", label: "パールの道", spheres: ["vocation", "culture", "pearl"] },
+/**
+ * 遺伝子易経のチャート。スフィアの配置とつながりは一般的なホロジェネティック・プロファイルの並びに合わせ、
+ * 図の見た目(色・形・装飾)はこのサイト独自にする。コアと天職は同じ配置なので1つの円で示す。
+ */
+type GkPath = "activation" | "venus" | "pearl" | "core";
+const GK_NODES: readonly { id: string; items: readonly string[]; label: string; x: number; y: number; path: GkPath }[] = [
+  { id: "lifes_work", items: ["lifes_work"], label: "ライフワーク", x: 200, y: 44, path: "activation" },
+  { id: "pearl", items: ["pearl"], label: "パール", x: 200, y: 138, path: "pearl" },
+  { id: "vocation", items: ["vocation", "core"], label: "天職・コア", x: 133, y: 187, path: "core" },
+  { id: "culture", items: ["culture"], label: "文化", x: 267, y: 187, path: "pearl" },
+  { id: "radiance", items: ["radiance"], label: "輝き", x: 50, y: 238, path: "activation" },
+  { id: "sq", items: ["sq"], label: "SQ", x: 200, y: 238, path: "venus" },
+  { id: "evolution", items: ["evolution"], label: "進化", x: 350, y: 238, path: "activation" },
+  { id: "iq", items: ["iq"], label: "IQ", x: 133, y: 289, path: "venus" },
+  { id: "eq", items: ["eq"], label: "EQ", x: 267, y: 289, path: "venus" },
+  { id: "attraction", items: ["attraction"], label: "引き寄せ", x: 200, y: 340, path: "venus" },
+  { id: "purpose", items: ["purpose"], label: "目的", x: 200, y: 436, path: "activation" },
 ];
+const GK_EDGES: readonly [string, string, Exclude<GkPath, "core">][] = [
+  ["lifes_work", "evolution", "activation"], ["radiance", "evolution", "activation"], ["radiance", "purpose", "activation"],
+  ["purpose", "attraction", "venus"], ["attraction", "iq", "venus"], ["iq", "eq", "venus"], ["eq", "sq", "venus"], ["sq", "vocation", "venus"],
+  ["vocation", "culture", "pearl"], ["culture", "pearl", "pearl"], ["pearl", "vocation", "pearl"],
+  ["lifes_work", "vocation", "pearl"], ["lifes_work", "pearl", "pearl"], ["lifes_work", "culture", "pearl"],
+];
+const GK_R = 32;
 
 export function GeneKeysChart({ module: m, content }: { module: ModuleResult; content: ContentMap }) {
   const d = m.data as GeneKeysData;
   const [selected, setSelected] = useState<string | null>(null);
+  const at = new Map(GK_NODES.map((n) => [n.id, n]));
+  // 線は円の縁で止め、円の中の文字にかからないようにする
+  const edge = (a: string, b: string) => {
+    const p = at.get(a)!, q = at.get(b)!;
+    const dx = q.x - p.x, dy = q.y - p.y, len = Math.hypot(dx, dy);
+    return { x1: p.x + (dx / len) * GK_R, y1: p.y + (dy / len) * GK_R, x2: q.x - (dx / len) * GK_R, y2: q.y - (dy / len) * GK_R };
+  };
+  const valueOf = (id: string) => d.spheres[id]?.value ?? "";
+  const label = GK_NODES.map((n) => `${n.label} ${valueOf(n.items[0]!)}`).join("、");
   return (
     <section class="card" aria-labelledby="gk-chart-title">
-      <h2 id="gk-chart-title">3つの道</h2>
-      <div class="gk-paths">
-        {PATHS.map((p) => (
-          <section key={p.id} class={`gk-path gk-${p.id}`} aria-label={p.label}>
-            <h3>{p.label}</h3>
-            <ol>
-              {p.spheres.map((s) => {
-                const item = m.items.find((i) => i.id === s);
-                const sp = d.spheres[s];
-                if (!item || !sp) return null;
-                return (
-                  <li key={s}>
-                    <button type="button" class="gk-node" aria-pressed={selected === s} onClick={() => setSelected(s)}>
-                      <span class="gk-sphere">{item.label}</span>
-                      <strong class="gk-value">{sp.value}</strong>
-                      {content.get(`gk.key.${sp.key}`)?.summary && <small>{content.get(`gk.key.${sp.key}`)!.summary}</small>}
-                    </button>
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
-        ))}
-      </div>
-      <p class="note chart-legend">数字は「鍵.ライン」です。スフィアを選ぶと、解説を表示します。コアと天職は同じ配置を、それぞれの道の視点で読みます。</p>
+      <h2 id="gk-chart-title">チャート</h2>
+      <svg class="gk-chart" viewBox="0 0 400 480" role="img" aria-label={`遺伝子易経のチャート。${label}`}>
+        <defs>
+          <linearGradient id="gk-core" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="50%" class="gk-stop-pearl" />
+            <stop offset="50%" class="gk-stop-venus" />
+          </linearGradient>
+        </defs>
+        <circle cx={200} cy={240} r={196} class="gk-ring" />
+        {GK_EDGES.map(([a, b, path]) => <line key={`${a}-${b}`} {...edge(a, b)} class={`gk-edge gk-edge-${path}`} />)}
+        {GK_NODES.map((n) => {
+          const item = m.items.find((i) => i.id === n.items[0]);
+          if (!item) return null;
+          const name = n.items.map((x) => m.items.find((i) => i.id === x)?.label ?? x).join("・");
+          return (
+            <g key={n.id} class={`gk-node gk-node-${n.path}${selected === n.items[0] ? " is-selected" : ""}`} role="button" tabIndex={0}
+              aria-label={`${name} ${valueOf(n.items[0]!)}`} aria-pressed={selected === n.items[0]}
+              onClick={() => setSelected(n.items[0]!)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(n.items[0]!); } }}>
+              <circle cx={n.x} cy={n.y} r={GK_R} class="gk-circle" />
+              <text x={n.x} y={n.y - 10} class="gk-name">{n.label}</text>
+              <text x={n.x} y={n.y + 9} class="gk-num">{valueOf(n.items[0]!)}</text>
+            </g>
+          );
+        })}
+      </svg>
+      <p class="note chart-legend">
+        数字は「鍵.ライン」です。<span class="gk-key gk-key-activation">変容活性化の道</span>、<span class="gk-key gk-key-venus">ヴィーナスの道</span>、<span class="gk-key gk-key-pearl">パールの道</span>を線で結んでいます。天職とコアは同じ配置を、それぞれの道の視点で読みます。スフィアを選ぶと、解説を表示します。
+      </p>
       {selected && <SelectionPanel module={m} itemId={selected} content={content} />}
     </section>
   );

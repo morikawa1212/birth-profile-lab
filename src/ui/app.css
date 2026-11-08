@@ -168,19 +168,30 @@ a.dictionary-link { text-decoration: none; min-height: 44px; padding: 8px 18px; 
 .graha[aria-pressed=true] { background: var(--focus); }
 .rasi-center { grid-row: 2 / 4; grid-column: 2 / 4; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--sub); }
 .rasi-center small { font-size: 13px; }
-/* 遺伝子易経の3つの道 */
-.gk-paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.gk-path h3 { margin: 0 0 6px; font-size: 16px; }
-.gk-path ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
-.gk-path li { position: relative; }
-.gk-path li + li::before { content: ""; position: absolute; left: 50%; top: -18px; height: 18px; border-left: 2px solid var(--accent); }
-.gk-node { display: block; width: 100%; padding: 8px 10px; border: 1.5px solid var(--accent); border-radius: 10px; background: #fff; color: var(--text); font: inherit; text-align: center; cursor: pointer; line-height: 1.5; }
-.gk-venus .gk-node { border-color: #a0577a; }
-.gk-pearl .gk-node { border-color: #7a6a2e; }
-.gk-node[aria-pressed=true] { background: #fff6e0; }
-.gk-sphere { display: block; font-size: 14px; color: var(--sub); }
-.gk-value { display: block; font-size: 20px; }
-.gk-node small { display: block; font-size: 13px; color: var(--sub); }
+/* 遺伝子易経のチャート */
+.gk-chart { display: block; width: 100%; max-width: 480px; height: auto; margin: 0 auto 8px; }
+.gk-ring { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
+.gk-edge { stroke-width: 2; }
+.gk-edge-activation { stroke: #0b7a86; }
+.gk-edge-venus { stroke: #a0577a; }
+.gk-edge-pearl { stroke: #8a7a3a; }
+.gk-circle { stroke-width: 2.5; fill: #fff; }
+.gk-node { cursor: pointer; }
+.gk-node-activation .gk-circle { stroke: #0b7a86; fill: #e8f4f5; }
+.gk-node-venus .gk-circle { stroke: #a0577a; fill: #f8ecf2; }
+.gk-node-pearl .gk-circle { stroke: #8a7a3a; fill: #f6f2e2; }
+.gk-node-core .gk-circle { stroke: #6b5a5a; fill: url(#gk-core); }
+.gk-stop-pearl { stop-color: #f6f2e2; }
+.gk-stop-venus { stop-color: #f8ecf2; }
+.gk-node.is-selected .gk-circle { fill: #ffe7a8; }
+.gk-node:focus { outline: none; }
+.gk-node:focus-visible .gk-circle { stroke: var(--focus); stroke-width: 4; }
+.gk-name { font-size: 9px; fill: var(--sub); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.gk-num { font-size: 17px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: central; font-variant-numeric: tabular-nums; pointer-events: none; }
+.gk-key { font-weight: 700; }
+.gk-key-activation { color: #0b7a86; }
+.gk-key-venus { color: #a0577a; }
+.gk-key-pearl { color: #7a6a2e; }
 /* その場の解説 */
 .item-more { margin: 0 0 10px; }
 .item-more > summary { cursor: pointer; color: var(--accent-dark); font-size: 15px; min-height: 36px; display: flex; align-items: center; }
