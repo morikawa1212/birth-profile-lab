@@ -4,10 +4,19 @@ import { BODY, PLANET_LABELS } from "../../core/bodies";
 import type { DivinationModule, ResultItem } from "../../core/types";
 import { formatDegree, norm360, zodiac, type ZodiacPosition } from "../../core/zodiac";
 
-const PLANETS = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"] as const;
-const ASPECTS = [["conjunction", 0, "合"], ["sextile", 60, "六分"], ["square", 90, "矩"], ["trine", 120, "三分"], ["opposition", 180, "衝"]] as const;
+export const PLANETS = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"] as const;
+export const ASPECTS = [["conjunction", 0, "合"], ["sextile", 60, "六分"], ["square", 90, "矩"], ["trine", 120, "三分"], ["opposition", 180, "衝"]] as const;
 // プラシーダスは極圏付近で成立しないため、ハウスのみ保留する
 const PLACIDUS_MAX_LAT = 66;
+
+/** 黄経がどのハウスに入るか。カスプの間にあるかで判定する */
+export function houseOf(longitude: number, cusps: readonly number[]): number | undefined {
+  for (let i = 0; i < 12; i++) {
+    const start = cusps[i]!;
+    if (norm360(longitude - start) < norm360(cusps[(i + 1) % 12]! - start)) return i + 1;
+  }
+  return undefined;
+}
 
 export interface WesternPlanet extends ZodiacPosition { retrograde: boolean; longitudeSpeed: number; house?: number }
 export type WesternHouses =
@@ -44,11 +53,8 @@ export const westernModule: DivinationModule<typeof settings, WesternData> = {
       if (placidus) {
         houses = { status: "calculated", cusps: placidus.cusps };
         for (const p of Object.values(planets)) {
-          placidus.cusps.some((start, i) => {
-            const span = norm360(placidus.cusps[(i + 1) % 12]! - start);
-            if (norm360(p.longitude - start) < span) { p.house = i + 1; return true; }
-            return false;
-          });
+          const house = houseOf(p.longitude, placidus.cusps);
+          if (house) p.house = house;
         }
       } else {
         houses = { status: "unsupported", reason: "この緯度ではプラシーダスのハウスを算出できません。方式は自動で変更しません。" };

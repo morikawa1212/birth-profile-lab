@@ -10,6 +10,8 @@ export interface ContentRecord {
   sections?: { heading: string; body: string }[];
   questions?: string[];
   attributes?: { name: string; value: string; source: string }[];
+  /** 秘教占星術の総合的な読み解きに差し込む短い句 */
+  phrases?: Record<string, { text: string; basis: "source" | "synthesis" }>;
   sources: { title: string; author?: string; page?: string; url?: string }[];
   rights: { status: "owner_original" | "owner_provided" | "licensed" | "quotation" | "unreviewed"; note?: string };
   review: "draft" | "approved";

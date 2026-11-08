@@ -15,7 +15,7 @@ describe("コピーの文章", () => {
   it("全体: 出生情報、全体系の結果、要約、解説本文を含む", async () => {
     const birth = norm(BASE, BASE_UTC);
     const t = allModulesText(await calculate(birth, engine), { birth, time: "12:00", placeLabel: "東京都千代田区" }, full);
-    for (const x of ["【出生情報】", "生年月日: 2000-01-01", "出生時刻: 12:00", "出生地: 東京都千代田区", "タイムゾーン: Asia/Tokyo", "■ 遺伝子易経", "■ 西洋占星術", "■ インド占星術", "■ 数秘術", "[変容活性化の道]", "ライフワーク: 38.1(サンプルA → B → C)", "知能指数（IQ）: 34.2", "コア: 26.6", "天職: 26.6", "太陽: 山羊座 9.99°", "スヴァーティー 第3パーダ", "ライフパス: 4", "計算の過程: 2 + 0 + 0 + 0 + 0 + 1 + 0 + 1 = 4", "計算方法:", "〈解説〉", "本文は入れない", "天の才: サンプルB", "読み解きのヒント", "ヒントの本文", "morikawatakashi.com/profile-lab/"]) {
+    for (const x of ["【出生情報】", "生年月日: 2000-01-01", "出生時刻: 12:00", "出生地: 東京都千代田区", "タイムゾーン: Asia/Tokyo", "■ 遺伝子易経", "■ 西洋占星術", "■ 秘教占星術", "■ インド占星術", "■ 数秘術", "[変容活性化の道]", "ライフワーク: 38.1(サンプルA → B → C)", "知能指数（IQ）: 34.2", "コア: 26.6", "天職: 26.6", "太陽: 山羊座 9.99°", "スヴァーティー 第3パーダ", "ライフパス: 4", "計算の過程: 2 + 0 + 0 + 0 + 0 + 1 + 0 + 1 = 4", "計算方法:", "〈解説〉", "本文は入れない", "天の才: サンプルB", "読み解きのヒント", "ヒントの本文", "morikawatakashi.com/profile-lab/"]) {
       expect(t, x).toContain(x);
     }
     expect(t).not.toContain("undefined");
@@ -92,11 +92,11 @@ describe("AI鑑定用プロンプト", () => {
     expect(t).not.toContain("# 相談したいこと");
     expect(promptHead("seven_years", { year: 2026, age: 7 })).toContain("7〜14歳の周期まで");
   });
-  it.each([["western", "西洋占星術", ["ハウス", "アスペクト"]], ["vedic", "インド占星術", ["ラグナ", "ナクシャトラ"]], ["numerology", "数秘術", ["ライフパス", "誕生数"]]] as const)("占術別(%s): その占術だけを指示する", (id, name, words) => {
+  it.each([["western", "西洋占星術", ["ハウス", "アスペクト"]], ["esoteric", "秘教占星術", ["秘教的支配星", "光線", "十字", "判定しないでください", "ASCだけで魂の全体像を決めない"]], ["vedic", "インド占星術", ["ラグナ", "ナクシャトラ"]], ["numerology", "数秘術", ["ライフパス", "誕生数"]]] as const)("占術別(%s): その占術だけを指示する", (id, name, words) => {
     const t = singlePromptHead(id);
     expect(t).toContain(`あなたは${name}に詳しい鑑定士です`);
     for (const w of words) expect(t, w).toContain(w);
-    for (const other of ["遺伝子易経", "西洋占星術", "インド占星術", "数秘術"].filter((o) => o !== name)) expect(t, other).not.toContain(other);
+    for (const other of ["遺伝子易経", "西洋占星術", "秘教占星術", "インド占星術", "数秘術"].filter((o) => o !== name)) expect(t, other).not.toContain(other);
     expect(t).not.toContain("占術ごとに");
     expect(t).toContain("他の占術の内容は混ぜない");
     expect(buildSinglePrompt(id, "本文").endsWith("# 鑑定内容\n本文")).toBe(true);

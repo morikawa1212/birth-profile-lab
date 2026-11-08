@@ -3,8 +3,12 @@ import type { ModuleResult, ResultItem } from "../../core/types";
 import type { CalcResult } from "../../engine/worker";
 import type { NumerologyData } from "../../modules/numerology/index";
 import type { WesternData } from "../../modules/western/index";
+import type { EsotericData } from "../../modules/esoteric/index";
+import { EsotericChart, EsotericSynthesisCard, LearnLinks } from "./Esoteric";
+import { GeneKeysChart, VedicChart, WesternChart } from "../charts/ModuleCharts";
+import { Explanation, hasExplanation } from "../Explanation";
 import type { ContentMap } from "../content";
-import { allModulesText, singleModuleText, type BirthSummary } from "../copyText";
+import { allModulesText, itemSummary, singleModuleText, type BirthSummary } from "../copyText";
 import { ageOn, buildContemplationPrompt, buildPrompt, buildSinglePrompt, PROMPT_ORDER, PROMPT_PATTERNS, type PromptContext } from "../prompts";
 import { CopyButton } from "../CopyButton";
 import { GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows, SUMMARY_ITEMS } from "../labels";
@@ -98,10 +102,18 @@ function Unavailable({ module }: { module: ModuleResult }) {
   return <p class="notice">この体系の計算には{(module.missing ?? []).map((m) => MISSING_LABELS[m]).join("、")}が必要です。</p>;
 }
 
-function ItemRow({ moduleId, item, content }: { moduleId: string; item: ResultItem; content: ContentMap }) {
-  const summary = item.contentKeys.map((k) => content.get(k)?.summary).find(Boolean);
+function ItemRow({ moduleId, item, content, expandable = false }: { moduleId: string; item: ResultItem; content: ContentMap; expandable?: boolean }) {
+  const summary = itemSummary(moduleId, item, content);
   return (
-    <li><a class="item" href={`#${moduleId}/${item.id}`}><span>{item.label}</span> <strong>{item.display}</strong>{summary && <small class="summary"> {summary}</small>}</a></li>
+    <li>
+      <a class="item" href={`#${moduleId}/${item.id}`}><span>{item.label}</span> <strong>{item.display}</strong>{summary && <small class="summary"> {summary}</small>}</a>
+      {expandable && hasExplanation(item.contentKeys, content) && (
+        <details class="item-more">
+          <summary>解説を開く</summary>
+          <Explanation keys={item.contentKeys} content={content} />
+        </details>
+      )}
+    </li>
   );
 }
 
@@ -140,13 +152,20 @@ function ModuleView({ module: m, content }: { module: ModuleResult; content: Con
       {m.status === "unavailable" && <Unavailable module={m} />}
       {m.moduleId === "gene_keys" && m.status !== "unavailable" && <div><DictionaryLink module={m} /></div>}
       {m.moduleId === "western" && m.data ? <HouseNote data={m.data as WesternData} /> : null}
+      {m.moduleId === "western" && m.data ? <WesternChart module={m} content={content} /> : null}
+      {m.moduleId === "gene_keys" && m.data ? <GeneKeysChart module={m} content={content} /> : null}
+      {m.moduleId === "esoteric" && <p class="note">アリス・A・ベイリーの『秘教占星学』に基づき、西洋占星術と同じ天体の位置に、秘教的支配星と七光線を重ねています。西洋占星術のタブと見比べてみてください。</p>}
+      {m.moduleId === "esoteric" && m.data ? <EsotericChart data={m.data as EsotericData} content={content} /> : null}
       {m.moduleId === "vedic" && m.data && !m.items.some((i) => i.id === "lagna") ? <p class="notice">出生地がないため、ラグナと室は保留しています。</p> : null}
+      {m.moduleId === "vedic" && m.data ? <VedicChart module={m} content={content} /> : null}
       {[...groups].map(([g, items]) => (
         <section key={g} class="card">
           <h2>{GROUP_LABELS[g] ?? g}</h2>
-          <ul class="items">{items.map((i) => <ItemRow key={i.id} moduleId={m.moduleId} item={i} content={content} />)}</ul>
+          <ul class="items">{items.map((i) => <ItemRow key={i.id} moduleId={m.moduleId} item={i} content={content} expandable />)}</ul>
         </section>
       ))}
+      {m.moduleId === "esoteric" && m.data ? <EsotericSynthesisCard data={m.data as EsotericData} content={content} /> : null}
+      {m.moduleId === "esoteric" ? <LearnLinks content={content} /> : null}
       {m.moduleId === "numerology" && m.data ? <NumerologyTrace data={m.data as NumerologyData} /> : null}
       {aspects && (
         <details class="card">

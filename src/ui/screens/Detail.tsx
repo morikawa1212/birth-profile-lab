@@ -10,6 +10,19 @@ const OPTIONAL_KEY = /^gk\.sphere\.[a-z_]+\.line\.\d$/;
 
 export function DetailScreen({ result, moduleId, itemId, content }: { result: CalcResult; moduleId: string; itemId: string; content: ContentMap }) {
   const m = result.modules[moduleId];
+  // 秘教占星術の学ぶページ(記事と12星座)。計算結果とは別の読みもの
+  const learn = moduleId === "esoteric" ? /^learn\.(article\.\d+|sign\.[a-z]+)$/.exec(itemId)?.[1] : undefined;
+  if (learn) {
+    const key = `eso.${learn}`;
+    const record = content.get(key);
+    return (
+      <section>
+        <p><a href="#esoteric">{MODULE_LABELS[moduleId]}へ戻る</a></p>
+        <h1 tabIndex={-1}>{record?.title ?? contentHeading(key)}</h1>
+        <div class="stack"><ContentSection contentKey={key} record={record} /></div>
+      </section>
+    );
+  }
   const item = m?.items.find((i) => i.id === itemId);
   if (!m || !item) {
     return <section><h1 tabIndex={-1}>項目が見つかりません</h1><a href="#overview">概要へ戻る</a></section>;

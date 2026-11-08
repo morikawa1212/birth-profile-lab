@@ -46,7 +46,7 @@ test("時刻不明は数秘のみ計算し、正午で埋めない", async ({ pa
   await page.getByRole("button", { name: "この条件で計算する" }).click();
   await expect(page.getByRole("heading", { name: "計算結果の概要" })).toBeVisible();
   await expect(page.getByRole("link", { name: "ライフパス 4" })).toBeVisible();
-  await expect(page.getByText("この体系の計算には出生時刻が必要です。")).toHaveCount(3);
+  await expect(page.getByText("この体系の計算には出生時刻が必要です。")).toHaveCount(4);
   await expect(page.getByText("ライフワーク")).toHaveCount(0);
 });
 
@@ -271,7 +271,7 @@ test("結果の画面にセッションの案内があり、コピーの文章�
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (t: string) => { (window as unknown as { copied: string[] }).copied.push(t); } } });
   });
   await toResults(page, SYNTHETIC);
-  for (const tab of ["概要", "遺伝子易経", "西洋占星術", "インド占星術", "数秘術"]) {
+  for (const tab of ["概要", "遺伝子易経", "西洋占星術", "秘教占星術", "インド占星術", "数秘術"]) {
     await page.getByRole("navigation", { name: "体系の切り替え" }).getByRole("link", { name: tab, exact: true }).click();
     await expect(page.getByRole("heading", { name: "知ったことを、現実の変化につなげるために" })).toBeVisible();
     await expect(page.getByRole("link", { name: "個別コーチングについて見る" })).toHaveAttribute("href", /session\/coaching-session\/$/);
@@ -338,10 +338,80 @@ test("スマホ幅でも横にはみ出さない", async ({ page }) => {
   const over = () => page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   expect(await over()).toBeLessThanOrEqual(0);
   await toResults(page, SYNTHETIC);
-  for (const tab of ["遺伝子易経", "西洋占星術", "インド占星術", "数秘術"]) {
+  for (const tab of ["遺伝子易経", "西洋占星術", "秘教占星術", "インド占星術", "数秘術"]) {
     await page.getByRole("link", { name: tab, exact: true }).first().click();
     expect(await over(), tab).toBeLessThanOrEqual(0);
   }
   await page.getByRole("link", { name: "ライフパス 4" }).click();
   expect(await over()).toBeLessThanOrEqual(0);
+});
+
+test("秘教占星術: チャート、支配星の切り替え、総合的な読み解き、学ぶページ", async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as unknown as { copied: string[] }).copied = [];
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (t: string) => { (window as unknown as { copied: string[] }).copied.push(t); } } });
+  });
+  await toResults(page, SYNTHETIC);
+  await page.getByRole("navigation", { name: "体系の切り替え" }).getByRole("link", { name: "秘教占星術", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "秘教占星術" })).toBeVisible();
+  // 2000-01-01 12:00 東京: ASC 牡羊座、秘教的支配星は水星
+  await expect(page.getByRole("link", { name: /ASC\(魂の方向性\) 牡羊座/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /ASCの秘教的支配星 水星\(第4光線\) 山羊座/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /ヴァルカン 位置算出対象外/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /地球 蟹座 9\.99° 第3ハウス\(象徴的位置\)/ })).toBeVisible();
+  const chart = page.getByRole("img", { name: /出生チャート/ });
+  await expect(chart).toBeVisible();
+  await expect(chart.getByRole("button", { name: "水星(ASCの秘教的支配星)" })).toBeVisible();
+  await page.getByRole("button", { name: "通常の支配星", exact: true }).click();
+  await expect(chart.getByRole("button", { name: "火星(ASCの通常の支配星)" })).toBeVisible();
+  await chart.getByRole("button", { name: "地球" }).click();
+  await expect(page.locator(".body-panel")).toContainText("射手座");
+  const headings = ["魂が発達させようとする資質", "現在のパーソナリティとの関係", "過去の条件づけと向き合うテーマ", "秘教的支配星が示す成長の方向性", "七光線の観点からの考察", "他者や集団への奉仕の可能性", "日常で意識するとよいこと"];
+  for (const h of headings) await expect(page.getByRole("heading", { level: 3, name: h })).toBeVisible();
+  await expect(page.locator(".synthesis-card")).toContainText("本人の魂やパーソナリティの光線は、出生チャートだけでは決まらない");
+  await page.getByRole("button", { name: "秘教占星術の分析結果をコピー" }).click();
+  await page.getByRole("button", { name: "秘教占星術の鑑定" }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { copied: string[] }).copied.length)).toBe(2);
+  const [copy, prompt] = await page.evaluate(() => (window as unknown as { copied: string[] }).copied);
+  expect(copy).toContain("〈総合的な読み解き〉");
+  expect(copy).toContain("ヴァルカン: 位置算出対象外");
+  expect(copy).not.toContain("■ 西洋占星術");
+  expect(prompt).toContain("あなたは秘教占星術に詳しい鑑定士です");
+  await page.getByRole("link", { name: "天秤座", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1, name: /天秤座/ })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole("heading", { level: 1, name: "秘教占星術" })).toBeVisible();
+});
+
+test("秘教占星術: 出生地がなければASCを出さない", async ({ page }) => {
+  await page.goto("./");
+  await fillBirth(page, { y: "2000", m: "1", d: "1", time: "12:00" });
+  await page.getByRole("radio", { name: "わからない" }).check();
+  await page.getByRole("button", { name: "確認へ進む" }).click();
+  await page.getByRole("button", { name: "この条件で計算する" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "計算結果の概要" })).toBeVisible();
+  await page.getByRole("navigation", { name: "体系の切り替え" }).getByRole("link", { name: "秘教占星術", exact: true }).click();
+  await expect(page.getByText("出生地がないため、ASCとハウスを推測せずに保留しています。").first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /^ASC/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /太陽\(パーソナリティ\) 山羊座/ })).toBeVisible();
+});
+
+test("西洋・インド・遺伝子易経にもチャートがあり、選ぶと解説を出す", async ({ page }) => {
+  await toResults(page, SYNTHETIC);
+  const nav = page.getByRole("navigation", { name: "体系の切り替え" });
+  await nav.getByRole("link", { name: "西洋占星術", exact: true }).click();
+  const wheel = page.getByRole("img", { name: /西洋占星術の出生チャート/ });
+  await expect(wheel).toBeVisible();
+  await wheel.getByRole("button", { name: "火星" }).click();
+  await expect(page.locator(".body-panel")).toContainText("火星: 水瓶座");
+  await expect(page.locator(".body-panel").getByRole("link", { name: "火星のページで詳しく読む" })).toBeVisible();
+  await nav.getByRole("link", { name: "インド占星術", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "チャート(南インド式)" })).toBeVisible();
+  await expect(page.locator(".rasi-cell.is-lagna")).toHaveCount(1);
+  await page.getByRole("group", { name: /ラーシ・チャート/ }).getByRole("button", { name: /^月/ }).click();
+  await expect(page.locator(".body-panel")).toContainText("月");
+  await nav.getByRole("link", { name: "遺伝子易経", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "3つの道" })).toBeVisible();
+  await page.getByRole("button", { name: /ライフワーク\s*38\.1/ }).click();
+  await expect(page.locator(".body-panel")).toContainText("ライフワーク: 38.1");
 });

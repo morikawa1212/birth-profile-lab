@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // 分析結果をコピー用のテキストにする。出生情報と解説本文も含める。
 import type { ModuleResult, NormalizedBirth, ResultItem } from "../core/types";
+import type { EsotericData } from "../modules/esoteric/index";
 import type { NumerologyData } from "../modules/numerology/index";
+import { buildSynthesis, synthesisText } from "./esotericSynthesis";
 import type { ContentMap } from "./content";
 import { contentHeading, GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows } from "./labels";
 
@@ -20,8 +22,19 @@ function birthText({ birth, time, placeLabel }: BirthSummary): string {
   return lines.join("\n");
 }
 
-function itemLine(item: ResultItem, content: ContentMap): string {
-  const summary = item.contentKeys.map((k) => content.get(k)?.summary).find(Boolean);
+/** 一覧に添える短い解説。秘教占星術の ASC・太陽・月は、星座の解説のうち役割に合う句を使う */
+export function itemSummary(moduleId: string, item: ResultItem, content: ContentMap): string | undefined {
+  if (moduleId === "esoteric" && (item.id === "asc" || item.id === "sun" || item.id === "moon")) {
+    const role = { asc: "ascSoul", sun: "sunPersonality", moon: "moonPast" }[item.id];
+    const sign = item.contentKeys.find((k) => k.startsWith("eso.sign."));
+    const text = sign ? content.get(sign)?.phrases?.[role]?.text : undefined;
+    if (text) return text;
+  }
+  return item.contentKeys.map((k) => content.get(k)?.summary).find(Boolean);
+}
+
+function itemLine(item: ResultItem, content: ContentMap, moduleId = ""): string {
+  const summary = itemSummary(moduleId, item, content);
   return `${item.label}: ${item.display}${summary ? `(${summary})` : ""}`;
 }
 
@@ -57,11 +70,14 @@ export function moduleText(m: ModuleResult, content: ContentMap, options: TextOp
   for (const [g, items] of groups) {
     const label = GROUP_LABELS[g];
     if (label) lines.push(`[${label}]`);
-    for (const i of items) lines.push(itemLine(i, content));
+    for (const i of items) lines.push(itemLine(i, content, m.moduleId));
   }
   if (m.moduleId === "numerology" && m.data) {
     const n = m.data as NumerologyData;
     lines.push(`計算の過程: ${n.digits.join(" + ")} = ${n.sumTrace.join(" → ")}`);
+  }
+  if (m.moduleId === "esoteric" && m.data) {
+    lines.push("", "〈総合的な読み解き〉", synthesisText(buildSynthesis(m.data as EsotericData, content)));
   }
   lines.push(`計算方法: ${settingRows(m.settings).map(([k, v]) => `${k} ${v}`).join("、")}`);
   lines.push(...explanationText(m, content, options));

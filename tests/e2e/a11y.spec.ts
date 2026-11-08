@@ -12,7 +12,7 @@ test("確認画面", async ({ page }) => { await toConfirm(page, SYNTHETIC); awa
 test("概要と各体系", async ({ page }) => {
   await toResults(page, SYNTHETIC);
   await check(page);
-  for (const tab of ["遺伝子易経", "西洋占星術", "インド占星術", "数秘術"]) {
+  for (const tab of ["遺伝子易経", "西洋占星術", "秘教占星術", "インド占星術", "数秘術"]) {
     await page.getByRole("link", { name: tab, exact: true }).first().click();
     await check(page);
   }

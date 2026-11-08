@@ -7,6 +7,7 @@ type AnyModule = DivinationModule<never, unknown>;
 export const MODULE_LOADERS: Readonly<Record<string, () => Promise<AnyModule>>> = {
   gene_keys: async () => (await import("./gene_keys/index")).geneKeysModule as unknown as AnyModule,
   western: async () => (await import("./western/index")).westernModule as unknown as AnyModule,
+  esoteric: async () => (await import("./esoteric/index")).esotericModule as unknown as AnyModule,
   vedic: async () => (await import("./vedic/index")).vedicModule as unknown as AnyModule,
   numerology: async () => (await import("./numerology/index")).numerologyModule as unknown as AnyModule,
 };

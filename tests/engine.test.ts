@@ -35,7 +35,7 @@ describe("時刻の確かさ", () => {
     const ctx = norm({ date: "2000-01-01", timeAccuracy: "unknown" });
     expect(ctx.jdUt).toBeNull();
     const r = await calculate(ctx, engine);
-    for (const id of ["gene_keys", "western", "vedic"]) {
+    for (const id of ["gene_keys", "western", "esoteric", "vedic"]) {
       expect(r[id]!.status).toBe("unavailable");
       expect(r[id]!.missing).toEqual(["time"]);
       expect(r[id]!.items).toEqual([]);
@@ -125,8 +125,8 @@ describe("数秘", () => {
 });
 
 describe("登録と暦", () => {
-  it("4体系が登録され、未登録は拒否する", async () => {
-    expect(Object.keys(MODULE_LOADERS).sort()).toEqual(["gene_keys", "numerology", "vedic", "western"]);
+  it("5体系が登録され、未登録は拒否する", async () => {
+    expect(Object.keys(MODULE_LOADERS).sort()).toEqual(["esoteric", "gene_keys", "numerology", "vedic", "western"]);
     await expect(calculate(norm(BASE, BASE_UTC), engine, ["made_up"])).rejects.toThrow(InputError);
   });
   it("由来を結果に残す", async () => {

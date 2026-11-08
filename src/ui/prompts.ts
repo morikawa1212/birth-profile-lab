@@ -10,7 +10,7 @@ export interface PromptContext {
   age: number;
 }
 
-const ROLE = "あなたは西洋占星術、インド占星術、数秘術、遺伝子易経に詳しい鑑定士です。";
+const ROLE = "あなたは西洋占星術、秘教占星術、インド占星術、数秘術、遺伝子易経に詳しい鑑定士です。";
 
 const RULES = [
   "【鑑定内容】に書かれた値と解説をもとにし、星の配置や鍵の番号を推測したり計算し直したりしないでください。",
@@ -20,6 +20,8 @@ const RULES = [
   "計算されていない項目には触れないでください。",
 ];
 const KEY_NOTE = "遺伝子易経の鍵は、心の闇 → 天の才 → 天の光の要約だけを載せています。詳しい意味はこの要約に沿って補い、補った部分は一般的な解釈であると明記してください。";
+/** 秘教占星術はチャートを通じて関係する光線だけを示している。本人の光線や段階は判定しない */
+const ESOTERIC_NOTE = "秘教占星術の光線は、チャートを通じて関係する光線です。魂やパーソナリティの光線、イニシエーションの段階、魂の年齢を判定しないでください。ヴァルカンの位置は計算していないため、推測しないでください。";
 const NOT_PROOF = "複数の体系に同じテーマが出ても、同じ出生情報から求めているので、証明としては扱わないでください。";
 
 const ASK = `# 相談したいこと
@@ -68,6 +70,7 @@ export const PROMPT_PATTERNS: Readonly<Record<PromptId, Pattern>> = {
       "遺伝子易経のライフワーク、進化、輝き、目的、コアから、魂の目的として読めることを示してください。",
       "インド占星術のラーフとケートゥ、第9室と第12室、土星から、向かう方向と手放すテーマを読み解いてください。",
       "西洋占星術の土星と冥王星、第12ハウスなどから、繰り返し向き合うテーマを読み解いてください。",
+      "秘教占星術のASCとその秘教的支配星、月から、魂の方向性と、過去から持ち越した条件づけを読み解いてください。",
       "数秘術のライフパスから、人生を通じたテーマを示してください。",
       "以上を踏まえ、魂の目的とカルマ的な課題を整理し、日常で向き合う方法を3つ挙げてください。",
       "自分で考えを深めるための問いを3つ挙げてください。",
@@ -130,14 +133,14 @@ export const PROMPT_ORDER: readonly PromptId[] = ["overall", "each", "soul", "ti
 export function promptHead(id: PromptId, context: PromptContext): string {
   const p = PROMPT_PATTERNS[id];
   const steps = typeof p.steps === "function" ? p.steps(context) : p.steps;
-  const rules = [...(p.replaceRules ?? [...RULES, ...(p.extraRules ?? [])]), KEY_NOTE];
+  const rules = [...(p.replaceRules ?? [...RULES, ...(p.extraRules ?? [])]), KEY_NOTE, ESOTERIC_NOTE];
   return [p.intro(context), `# 進め方\n${list(steps, true)}`, `# 守ること\n${list(rules)}`, ...(p.ask ? [ASK] : [])].join("\n\n");
 }
 
 export const buildPrompt = (id: PromptId, body: string, context: PromptContext): string => `${promptHead(id, context)}\n\n# 鑑定内容\n${body}`;
 
 /** 占術ごとのタブで使う、その占術だけのプロンプト */
-const SINGLE: Readonly<Record<string, { name: string; steps: readonly string[] }>> = {
+const SINGLE: Readonly<Record<string, { name: string; steps: readonly string[]; extraRules?: readonly string[] }>> = {
   western: {
     name: "西洋占星術",
     steps: [
@@ -146,6 +149,21 @@ const SINGLE: Readonly<Record<string, { name: string; steps: readonly string[] }
       "主要なアスペクトから、内面の協力関係と葛藤を読み解いてください。",
       "才能、課題、人生のテーマをまとめてください。",
       "日常で試せる具体的な提案を3つ挙げてください。",
+    ],
+  },
+  esoteric: {
+    name: "秘教占星術",
+    steps: [
+      "ASC(魂の方向性)、太陽(パーソナリティ)、月(過去の条件づけ)を一つずつ読み解き、そのあとで3つの関係を示してください。",
+      "ASCの秘教的支配星の星座、ハウス、アスペクトを読み解き、通常の支配星との違いを示してください。",
+      "星座を通じて働く光線と、支配星を通して働く光線を区別して考察してください。",
+      "太陽、月、ASCが属する十字を示し、それぞれの十字のテーマを説明してください。",
+      "他者や集団への奉仕の可能性を示し、日常で意識するとよいことを3つ挙げてください。",
+    ],
+    extraRules: [
+      "ASCを最も重視しますが、ASCだけで魂の全体像を決めないでください。",
+      "十字の配置から、意識の進化の段階を判断しないでください。",
+      ESOTERIC_NOTE,
     ],
   },
   vedic: {
@@ -175,7 +193,7 @@ export function singlePromptHead(moduleId: string): string {
   return [
     `あなたは${m.name}に詳しい鑑定士です。以下の【鑑定内容】をもとに、${m.name}の観点から鑑定してください。`,
     `# 進め方\n${list(m.steps, true)}`,
-    `# 守ること\n${list([...rules, `${m.name}の考え方の中で読み解き、他の占術の内容は混ぜないでください。`])}`,
+    `# 守ること\n${list([...rules, ...(m.extraRules ?? []), `${m.name}の考え方の中で読み解き、他の占術の内容は混ぜないでください。`])}`,
     ASK,
   ].join("\n\n");
 }

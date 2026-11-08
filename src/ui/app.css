@@ -114,3 +114,81 @@ a.dictionary-link { text-decoration: none; min-height: 44px; padding: 8px 18px; 
 .more-contents { margin: 0 0 20px; padding: 0 0 20px; border-bottom: 1px solid currentColor; }
 .more-contents p { margin: 0 0 6px; }
 .more-contents a { font-weight: 700; }
+/* 秘教占星術 */
+.scheme-switch { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.scheme-btn { min-height: 44px; padding: 6px 14px; border: 1.5px solid var(--accent); border-radius: 6px; background: #fff; color: var(--accent-dark); font: inherit; font-size: 15.5px; cursor: pointer; }
+.scheme-btn[aria-pressed=true] { background: var(--accent); color: #fff; font-weight: 700; }
+.chart { display: block; width: 100%; max-width: 440px; height: auto; margin: 0 auto 8px; }
+.chart .ring { fill: none; stroke: #9aa3ae; stroke-width: 1; }
+.chart .tick { stroke: #9aa3ae; stroke-width: 1; }
+.chart .cusp { stroke: var(--line); stroke-width: 1; }
+.chart .sign-label { font-size: 15px; fill: var(--sub); text-anchor: middle; dominant-baseline: central; }
+.chart .house-label { font-size: 11px; fill: #6b7380; text-anchor: middle; dominant-baseline: central; }
+.chart .asc-line { stroke: var(--accent-dark); stroke-width: 3; }
+.chart .asc-label { font-size: 13px; font-weight: 700; fill: var(--accent-dark); text-anchor: middle; }
+.chart .ruler-link { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 4; }
+.chart .body { cursor: pointer; }
+.chart .body .pointer { stroke: #9aa3ae; stroke-width: 1; }
+.chart .body-bg { fill: #fff; stroke: #7c8796; stroke-width: 1; }
+.chart .body-label { font-size: 15px; fill: var(--text); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.chart .body.is-earth .body-bg { stroke-dasharray: 3 2; }
+.chart .body.is-ruler .body-bg { stroke: var(--accent-dark); stroke-width: 3; fill: #e6f3f4; }
+.chart .body.is-selected .body-bg { fill: var(--focus); }
+.chart .body:focus { outline: none; }
+.chart .body:focus-visible .body-bg { stroke: var(--focus); stroke-width: 4; }
+.chart-legend { font-size: 14.5px; }
+.body-panel { margin: 8px 0 12px; padding: 10px 14px; background: var(--tint); border-radius: 8px; }
+.body-panel h3 { margin-top: 0; }
+.table-scroll td.current { background: #e6f3f4; font-weight: 700; }
+.synthesis-section + .synthesis-section { margin-top: 8px; }
+.basis { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 12.5px; line-height: 1.7; vertical-align: 1px; white-space: nowrap; }
+.basis.source { background: #e6f3f4; color: var(--accent-dark); }
+.basis.synthesis { background: #f1ecf7; color: #5b3d7a; }
+.refs { display: block; color: var(--sub); font-size: 13.5px; }
+.learn-list { margin: 0 0 8px; padding-left: 1.4em; }
+.sign-links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; }
+.sign-links a { display: inline-block; min-height: 40px; padding: 6px 0; }
+/* チャート共通の追加 */
+.chart .aspect { stroke-width: 1.2; }
+.chart .aspect.harmony { stroke: #2b6cb0; }
+.chart .aspect.tension { stroke: #b4412f; }
+.chart .mc-line { stroke: var(--sub); stroke-width: 1.5; }
+.chart .mc-label { font-size: 12px; font-weight: 700; fill: var(--sub); text-anchor: middle; dominant-baseline: central; }
+.legend-harmony { color: #2b6cb0; font-weight: 700; }
+.legend-tension { color: #b4412f; font-weight: 700; }
+/* 南インド式チャート */
+.rasi-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, minmax(78px, auto)); border: 1.5px solid #7c8796; max-width: 480px; margin: 0 auto 8px; }
+.rasi-cell { border: 1px solid var(--line); padding: 4px 6px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rasi-cell.is-lagna { background: #e6f3f4; box-shadow: inset 0 0 0 3px var(--accent-dark); }
+.rasi-name { font-size: 13px; color: var(--sub); line-height: 1.4; }
+.lagna-mark { display: block; color: var(--accent-dark); font-size: 12.5px; }
+.rasi-bodies { display: flex; flex-wrap: wrap; gap: 4px; }
+.graha { min-width: 36px; min-height: 36px; padding: 0 4px; border: 1px solid #7c8796; border-radius: 50%; background: #fff; color: var(--text); font: inherit; font-size: 15px; cursor: pointer; }
+.graha small { font-size: 10px; vertical-align: super; }
+.graha[aria-pressed=true] { background: var(--focus); }
+.rasi-center { grid-row: 2 / 4; grid-column: 2 / 4; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--sub); }
+.rasi-center small { font-size: 13px; }
+/* 遺伝子易経の3つの道 */
+.gk-paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.gk-path h3 { margin: 0 0 6px; font-size: 16px; }
+.gk-path ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.gk-path li { position: relative; }
+.gk-path li + li::before { content: ""; position: absolute; left: 50%; top: -18px; height: 18px; border-left: 2px solid var(--accent); }
+.gk-node { display: block; width: 100%; padding: 8px 10px; border: 1.5px solid var(--accent); border-radius: 10px; background: #fff; color: var(--text); font: inherit; text-align: center; cursor: pointer; line-height: 1.5; }
+.gk-venus .gk-node { border-color: #a0577a; }
+.gk-pearl .gk-node { border-color: #7a6a2e; }
+.gk-node[aria-pressed=true] { background: #fff6e0; }
+.gk-sphere { display: block; font-size: 14px; color: var(--sub); }
+.gk-value { display: block; font-size: 20px; }
+.gk-node small { display: block; font-size: 13px; color: var(--sub); }
+/* その場の解説 */
+.item-more { margin: 0 0 10px; }
+.item-more > summary { cursor: pointer; color: var(--accent-dark); font-size: 15px; min-height: 36px; display: flex; align-items: center; }
+.explanation section + section { margin-top: 10px; }
+.explanation h4 { margin: 8px 0 2px; font-size: 16px; }
+.explanation p { margin: 0 0 8px; }
+.summary-line { color: var(--sub); }
+@media (max-width: 560px) {
+  .body-panel .table { grid-template-columns: 1fr; gap: 0; }
+  .body-panel .table dd { margin-bottom: 8px; }
+}
