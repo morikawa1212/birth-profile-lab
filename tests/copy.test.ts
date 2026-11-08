@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { calculate } from "../src/engine/calculate";
 import { allModulesText, singleModuleText } from "../src/ui/copyText";
-import { ageOn, buildContemplationPrompt, buildPrompt, buildSinglePrompt, CONTEMPLATION_HEAD, PROMPT_ORDER, promptHead, singlePromptHead } from "../src/ui/prompts";
+import { ageOn, briefPromptHead, briefSinglePromptHead, buildContemplationPrompt, buildPrompt, buildSinglePrompt, CONTEMPLATION_HEAD, PROMPT_ORDER, promptHead, singlePromptHead } from "../src/ui/prompts";
 import type { ContentMap, ContentRecord } from "../src/ui/content";
 import { BASE, BASE_UTC, engine, norm } from "./helpers";
 
@@ -133,5 +133,44 @@ describe("AI鑑定用プロンプト", () => {
   it("満年齢は誕生日の前後で変わる", () => {
     expect(ageOn("2000-06-15", "2026-06-14")).toBe(25);
     expect(ageOn("2000-06-15", "2026-06-15")).toBe(26);
+  });
+});
+
+describe("短いプロンプトと、プロンプト用の省略", () => {
+  const ctx2 = { year: 2026, age: 26 };
+  it("プロンプト用では秘教占星術の解説ページを省き、総合的な読み解きは残す", async () => {
+    const birth = norm(BASE, BASE_UTC);
+    const r = await calculate(birth, engine, ["esoteric"]);
+    const sign = r.esoteric!.items.find((i) => i.id === "asc")!.contentKeys.find((k) => k.startsWith("eso.sign."))!;
+    const rec = { key: sign, locale: "ja", body: "星座ページの長い本文", sources: [], rights: { status: "owner_original" }, review: "approved" } as ContentRecord;
+    const c: ContentMap = new Map([[sign, rec]]);
+    const s = { birth, time: "12:00", placeLabel: "" };
+    expect(singleModuleText(r.esoteric!, s, c)).toContain("星座ページの長い本文");
+    const compact = singleModuleText(r.esoteric!, s, c, { compact: true });
+    expect(compact).not.toContain("星座ページの長い本文");
+    expect(compact).toContain("〈総合的な読み解き〉");
+  });
+  it("短い本文は主要な項目だけで、解説・読み解き・計算方法を含まない", async () => {
+    const birth = norm(BASE, BASE_UTC);
+    const r = await calculate(birth, engine);
+    const s = { birth, time: "12:00", placeLabel: "東京都千代田区" };
+    const t = allModulesText(r, s, full, { compact: true, brief: true, summaryOnly: true });
+    for (const x of ["【出生情報】", "ライフワーク: 38.1", "太陽: 山羊座 9.99°", "ASC(魂の方向性)", "ラグナ", "ライフパス: 4"]) expect(t, x).toContain(x);
+    for (const x of ["〈解説〉", "〈総合的な読み解き〉", "計算方法", "[アスペクト]", "計算の過程", "知能指数（IQ）", "火星"]) expect(t, x).not.toContain(x);
+    expect(t.length).toBeLessThan(1500);
+    const one = singleModuleText(r.western!, s, full, { compact: true, brief: true });
+    expect(one).toContain("火星");
+    expect(one).not.toContain("[アスペクト]");
+  });
+  it("短い指示は進め方の一覧を持たず、守ることを短く含む", () => {
+    for (const id of PROMPT_ORDER) {
+      const h = briefPromptHead(id, ctx2);
+      expect(h, id).not.toContain("# 進め方");
+      expect(h, id).toContain("計算し直したり推測したりしないでください");
+      expect(buildPrompt(id, "本文", ctx2, true).endsWith("# 鑑定内容\n本文")).toBe(true);
+    }
+    expect(briefSinglePromptHead("esoteric")).toContain("光線、意識の段階は判定しない");
+    expect(buildSinglePrompt("western", "本文", true)).toContain("あなたは西洋占星術に詳しい鑑定士です");
+    expect(buildSinglePrompt("western", "本文", true)).not.toContain("# 進め方");
   });
 });

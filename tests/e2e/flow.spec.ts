@@ -416,3 +416,34 @@ test("西洋・インド・遺伝子易経にもチャートがあり、選ぶ�
   await page.getByRole("button", { name: /ライフワーク\s*38\.1/ }).click();
   await expect(page.locator(".body-panel")).toContainText("ライフワーク: 38.1");
 });
+
+test("プロンプトの長さ: 詳しくは上位モデルをすすめ、短くは主要な項目だけをコピーする", async ({ page }) => {
+  // 1万字を超える詳しいプロンプトにするため、長い解説を差し込む(手元の配信物には解説データがない)
+  await page.route("**/content/ja.json", (r) => r.fulfill({ json: { schemaVersion: 1, records: [{ key: "west.planet.sun", locale: "ja", body: "太陽の長い解説。".repeat(1500), sources: [], rights: { status: "owner_original" }, review: "approved" }] } }));
+  await page.addInitScript(() => {
+    (window as unknown as { copied: string[] }).copied = [];
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (t: string) => { (window as unknown as { copied: string[] }).copied.push(t); } } });
+  });
+  await toResults(page, SYNTHETIC);
+  const box = page.locator(".prompt-box");
+  await expect(box.getByRole("radio", { name: "詳しく(解説つき)" })).toBeChecked();
+  await expect(box.locator(".prompt-length-note")).toContainText("上位モデル");
+  await box.getByRole("radio", { name: "短く(主要な項目のみ)" }).check();
+  await expect(box.locator(".prompt-length-note")).toContainText("主要な項目の値");
+  await page.getByRole("button", { name: "総合的な鑑定" }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { copied: string[] }).copied.length)).toBe(1);
+  const t = await page.evaluate(() => (window as unknown as { copied: string[] }).copied[0]!);
+  expect(t).toContain("# 鑑定内容");
+  expect(t).not.toContain("# 進め方");
+  expect(t).not.toContain("〈解説〉");
+  expect(t).toContain("ライフパス: 4");
+  expect(t.length).toBeLessThan(2000);
+});
+
+test("プロンプトの長さ: 1万字未満のタブでは上位モデルをすすめない", async ({ page }) => {
+  await toResults(page, SYNTHETIC);
+  await page.getByRole("navigation", { name: "体系の切り替え" }).getByRole("link", { name: "西洋占星術", exact: true }).click();
+  const note = page.locator(".prompt-box .prompt-length-note");
+  await expect(note).toContainText("このプロンプトは約");
+  await expect(note).not.toContainText("上位モデル");
+});

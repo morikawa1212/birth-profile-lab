@@ -211,3 +211,7 @@ a.dictionary-link { text-decoration: none; min-height: 44px; padding: 8px 18px; 
   .body-panel .table dd { margin-bottom: 8px; }
 }
 .gk-node:focus-visible .gk-arc { stroke: var(--focus); stroke-width: 4; }
+.prompt-length { border: 0; margin: 0 0 6px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: center; }
+.prompt-length legend { font-size: 15.5px; font-weight: 700; padding: 0; margin-bottom: 2px; float: left; width: 100%; }
+.prompt-length label { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; font-weight: 400; }
+.prompt-length-note { margin-bottom: 10px; }

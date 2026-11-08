@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { useState } from "preact/hooks";
 import type { ModuleResult, ResultItem } from "../../core/types";
 import type { CalcResult } from "../../engine/worker";
 import type { NumerologyData } from "../../modules/numerology/index";
@@ -22,6 +23,14 @@ export function ResultsScreen({ result, tab, time, placeLabel, content, onRestar
   const summary: BirthSummary = { birth: result.birth, placeLabel, ...(time ? { time } : {}) };
   const active = tab === "overview" || MODULE_ORDER.includes(tab as never) ? tab : "overview";
   const tabs = [["overview", "概要"], ...MODULE_ORDER.map((m) => [m, MODULE_LABELS[m]!])] as const;
+  const [brief, setBrief] = useState(false);
+  const textOptions = brief ? { compact: true, brief: true } : { compact: true };
+  const overviewBody = () => allModulesText(result.modules, summary, content, { ...textOptions, summaryOnly: true });
+  const moduleBody = (id: string) => singleModuleText(result.modules[id]!, summary, content, textOptions);
+  /** 詳しいプロンプトの長さ。全体の画面では総合的な鑑定、体系の画面ではその体系のもの */
+  const promptLength = () => active === "overview"
+    ? buildPrompt("overall", allModulesText(result.modules, summary, content, { compact: true }), promptContext(result.birth.isoDate)).length
+    : active === "gene_keys" ? buildContemplationPrompt(moduleBody("gene_keys")).length : buildSinglePrompt(active, moduleBody(active)).length;
   return (
     <section>
       <h1 tabIndex={-1}>{active === "overview" ? "計算結果の概要" : MODULE_LABELS[active]}</h1>
@@ -40,15 +49,23 @@ export function ResultsScreen({ result, tab, time, placeLabel, content, onRestar
             <p class="note">{active === "gene_keys"
               ? "遺伝子易経は、内容を知ったうえで、日常の中で観照していくことを大切にします。AIが質問をしながら観照に寄り添うプロンプトを、鑑定内容とあわせてコピーします。"
               : "知りたいことを選ぶと、AIへの指示と鑑定内容をまとめてコピーします。AIに貼り付けてお使いください。"}</p>
+            <fieldset class="prompt-length">
+              <legend>プロンプトの長さ</legend>
+              <label><input type="radio" name="prompt-length" checked={!brief} onChange={() => setBrief(false)} />詳しく(解説つき)</label>
+              <label><input type="radio" name="prompt-length" checked={brief} onChange={() => setBrief(true)} />短く(主要な項目のみ)</label>
+            </fieldset>
+            <p class="note prompt-length-note">{brief
+              ? "主要な項目の値と短い指示だけをコピーします。無料版のAIやスマホでも使いやすい長さです。解説の本文は含まないため、読み解きはAIの一般的な知識によります。"
+              : longNote(promptLength())}</p>
             <div class="prompt-buttons">
               {active === "overview"
                 ? <>
-                    {PROMPT_ORDER.map((id) => <PromptButton key={id} label={PROMPT_PATTERNS[id].label} text={() => buildPrompt(id, allModulesText(result.modules, summary, content, { compact: true }), promptContext(result.birth.isoDate))} />)}
-                    {result.modules.gene_keys!.status !== "unavailable" && <PromptButton label="遺伝子易経の観照サポート" text={() => buildContemplationPrompt(singleModuleText(result.modules.gene_keys!, summary, content, { compact: true }))} />}
+                    {PROMPT_ORDER.map((id) => <PromptButton key={id} label={PROMPT_PATTERNS[id].label} text={() => buildPrompt(id, overviewBody(), promptContext(result.birth.isoDate), brief)} />)}
+                    {result.modules.gene_keys!.status !== "unavailable" && <PromptButton label="遺伝子易経の観照サポート" text={() => buildContemplationPrompt(moduleBody("gene_keys"))} />}
                   </>
                 : active === "gene_keys"
-                  ? <PromptButton label="観照をサポートするプロンプト" text={() => buildContemplationPrompt(singleModuleText(result.modules.gene_keys!, summary, content, { compact: true }))} />
-                  : <PromptButton label={`${MODULE_LABELS[active]}の鑑定`} text={() => buildSinglePrompt(active, singleModuleText(result.modules[active]!, summary, content, { compact: true }))} />}
+                  ? <PromptButton label="観照をサポートするプロンプト" text={() => buildContemplationPrompt(moduleBody("gene_keys"))} />
+                  : <PromptButton label={`${MODULE_LABELS[active]}の鑑定`} text={() => buildSinglePrompt(active, moduleBody(active), brief)} />}
             </div>
           </section>
         </div>
@@ -86,6 +103,15 @@ function SessionInvite() {
       <p class="note">どのプランが合うか迷う場合や、内容についてのご質問は、お問い合わせからお気軽にどうぞ。</p>
     </section>
   );
+}
+
+/** 長いプロンプトでは、長文を丁寧に読めるAIをすすめる。製品名は時期で変わるため書かない */
+function longNote(length: number): string {
+  const size = length >= 10000 ? `約${(length / 10000).toFixed(1)}万字` : `約${Math.max(1, Math.round(length / 1000))}千字`;
+  // 1万字未満は多くのAIで十分に扱える長さなので、長さだけを伝える
+  return length >= 10000
+    ? `このプロンプトは${size}と長めです。長い文章を丁寧に読めるAI(各サービスの上位モデルや、じっくり考えるモード)を使うと、読み落としが少なく、根拠に沿った分析になりやすくなります。途中が省かれる場合は「短く」をお試しください。`
+    : `このプロンプトは${size}です。解説の本文もあわせてAIに渡します。`;
 }
 
 function promptContext(birthIso: string): PromptContext {

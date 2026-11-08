@@ -5,7 +5,7 @@ import type { EsotericData } from "../modules/esoteric/index";
 import type { NumerologyData } from "../modules/numerology/index";
 import { buildSynthesis, synthesisText } from "./esotericSynthesis";
 import type { ContentMap } from "./content";
-import { contentHeading, GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows } from "./labels";
+import { contentHeading, GROUP_LABELS, MISSING_LABELS, MODULE_LABELS, MODULE_ORDER, settingRows, SUMMARY_ITEMS } from "./labels";
 
 const SITE_LINE = "出生プロフィール https://morikawatakashi.com/profile-lab/";
 
@@ -33,6 +33,9 @@ export function itemSummary(moduleId: string, item: ResultItem, content: Content
   return item.contentKeys.map((k) => content.get(k)?.summary).find(Boolean);
 }
 
+/** 短いプロンプトで省くグループ(数が多く、要点の読み解きには不要なもの) */
+const BRIEF_SKIP_GROUPS = new Set(["aspects", "bodies", "rays"]);
+
 function itemLine(item: ResultItem, content: ContentMap, moduleId = ""): string {
   const summary = itemSummary(moduleId, item, content);
   return `${item.label}: ${item.display}${summary ? `(${summary})` : ""}`;
@@ -41,11 +44,16 @@ function itemLine(item: ResultItem, content: ContentMap, moduleId = ""): string 
 export interface TextOptions {
   /** 鍵の解説全文を省く。AI へ渡すプロンプトでは長くなりすぎるため、要約だけを残す */
   compact?: boolean;
+  /** 短いプロンプト用。主要な項目の値だけにし、解説・総合的な読み解き・計算方法を省く */
+  brief?: boolean;
+  /** brief のとき、主要な項目に絞る(全体のプロンプト)。false ならその体系の項目を広めに残す */
+  summaryOnly?: boolean;
 }
 
 /** 体系で使われた解説を、重複を除いて出現順にまとめる */
 function explanationText(m: ModuleResult, content: ContentMap, options: TextOptions): string[] {
-  const keys = [...new Set(m.items.flatMap((i) => i.contentKeys))].filter((k) => !(options.compact && k.startsWith("gk.key.")));
+  // プロンプト用では、鍵の解説全文と秘教占星術の解説ページ(長い本文)を省く。秘教占星術は総合的な読み解きを残す
+  const keys = [...new Set(m.items.flatMap((i) => i.contentKeys))].filter((k) => !(options.compact && (k.startsWith("gk.key.") || k.startsWith("eso."))));
   const blocks: string[] = [];
   for (const key of keys) {
     const r = content.get(key);
@@ -66,12 +74,17 @@ export function moduleText(m: ModuleResult, content: ContentMap, options: TextOp
   }
   if (m.status === "provisional") lines.push("おおよその時刻による仮計算です。");
   const groups = new Map<string, ResultItem[]>();
-  for (const i of m.items) groups.set(i.group ?? "", [...(groups.get(i.group ?? "") ?? []), i]);
+  const summary = SUMMARY_ITEMS[m.moduleId] ?? [];
+  const shown = !options.brief ? m.items
+    : options.summaryOnly ? m.items.filter((i) => summary.includes(i.id))
+    : m.items.filter((i) => !BRIEF_SKIP_GROUPS.has(i.group ?? ""));
+  for (const i of shown) groups.set(i.group ?? "", [...(groups.get(i.group ?? "") ?? []), i]);
   for (const [g, items] of groups) {
     const label = GROUP_LABELS[g];
     if (label) lines.push(`[${label}]`);
     for (const i of items) lines.push(itemLine(i, content, m.moduleId));
   }
+  if (options.brief) return lines.join("\n");
   if (m.moduleId === "numerology" && m.data) {
     const n = m.data as NumerologyData;
     lines.push(`計算の過程: ${n.digits.join(" + ")} = ${n.sumTrace.join(" → ")}`);

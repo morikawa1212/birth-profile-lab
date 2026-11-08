@@ -36,6 +36,8 @@ interface Pattern {
   extraRules?: readonly string[];
   replaceRules?: readonly string[];
   ask?: boolean;
+  /** 短いプロンプトの指示。主要な項目の値だけを渡すときに使う */
+  brief: (c: PromptContext) => string;
 }
 
 export const PROMPT_PATTERNS: Readonly<Record<PromptId, Pattern>> = {
@@ -51,6 +53,7 @@ export const PROMPT_PATTERNS: Readonly<Record<PromptId, Pattern>> = {
     ],
     extraRules: [NOT_PROOF],
     ask: true,
+    brief: () => "体系をまたいで共通するテーマにふれながら、才能・課題・人生のテーマを簡潔にまとめ、日常で試せることを3つ挙げてください。",
   },
   each: {
     label: "占術ごとの鑑定",
@@ -62,6 +65,7 @@ export const PROMPT_PATTERNS: Readonly<Record<PromptId, Pattern>> = {
     ],
     extraRules: ["別の占術の内容を混ぜず、その占術の考え方の中で読み解いてください。"],
     ask: true,
+    brief: () => "占術ごとに見出しを分け、それぞれの要点を2〜3行で読み解いてください。",
   },
   soul: {
     label: "魂の目的とカルマ的な課題",
@@ -81,6 +85,7 @@ export const PROMPT_PATTERNS: Readonly<Record<PromptId, Pattern>> = {
       "課題を罰や欠点としてではなく、成長のテーマとして伝えてください。",
     ],
     ask: true,
+    brief: () => "魂の目的として読めることと、成長のテーマとして向き合う課題を簡潔にまとめてください。魂やカルマは象徴的な読み方として扱ってください。",
   },
   timeline: {
     label: "人生の変曲点と1年ごとの運勢",
@@ -102,6 +107,7 @@ export const PROMPT_PATTERNS: Readonly<Record<PromptId, Pattern>> = {
       "計算されていない項目には触れないでください。",
     ],
     ask: true,
+    brief: ({ year }) => `一般的な周期(土星回帰、木星回帰など)の年齢から人生の変曲点の候補を挙げ、${year}年から${year + 4}年までの1年ごとのテーマを簡潔に示してください。未来を予言せず、自分で計算した部分は誤りがありうると明記してください。`,
   },
   seven_years: {
     label: "7年周期の振り返り",
@@ -124,6 +130,7 @@ export const PROMPT_PATTERNS: Readonly<Record<PromptId, Pattern>> = {
       "私の過去や性格を決めつけないでください。",
     ],
     ask: false,
+    brief: ({ age }) => `0〜7歳から7年ごとに、現在の${Math.floor(age / 7) * 7}〜${Math.floor(age / 7) * 7 + 7}歳まで、私の人生を振り返る質問を一度に1つずつしてください。答えを待ってから次へ進み、決めつけないでください。最初は準備ができているかを尋ねてください。`,
   },
 };
 
@@ -137,7 +144,16 @@ export function promptHead(id: PromptId, context: PromptContext): string {
   return [p.intro(context), `# 進め方\n${list(steps, true)}`, `# 守ること\n${list(rules)}`, ...(p.ask ? [ASK] : [])].join("\n\n");
 }
 
-export const buildPrompt = (id: PromptId, body: string, context: PromptContext): string => `${promptHead(id, context)}\n\n# 鑑定内容\n${body}`;
+/** 短いプロンプトでも守ってほしいこと */
+const BRIEF_RULES = "書かれた値をもとにし、計算し直したり推測したりしないでください。断定せず、読み方の一つとして伝えてください。";
+
+export function briefPromptHead(id: PromptId, context: PromptContext): string {
+  const p = PROMPT_PATTERNS[id];
+  return [p.intro(context), p.brief(context), BRIEF_RULES].join("\n\n");
+}
+
+export const buildPrompt = (id: PromptId, body: string, context: PromptContext, brief = false): string =>
+  `${brief ? briefPromptHead(id, context) : promptHead(id, context)}\n\n# 鑑定内容\n${body}`;
 
 /** 占術ごとのタブで使う、その占術だけのプロンプト */
 const SINGLE: Readonly<Record<string, { name: string; steps: readonly string[]; extraRules?: readonly string[] }>> = {
@@ -227,7 +243,16 @@ export const CONTEMPLATION_HEAD = `あなたは遺伝子易経の観照に寄り
 
 export const buildContemplationPrompt = (body: string): string => `${CONTEMPLATION_HEAD}\n\n# 遺伝子易経の内容\n${body}`;
 
-export const buildSinglePrompt = (moduleId: string, body: string): string => `${singlePromptHead(moduleId)}\n\n# 鑑定内容\n${body}`;
+export function briefSinglePromptHead(moduleId: string): string {
+  const m = SINGLE[moduleId]!;
+  return [
+    `あなたは${m.name}に詳しい鑑定士です。以下の主要な項目をもとに、${m.name}の観点から、才能・課題・人生のテーマを簡潔に読み解き、日常で試せることを3つ挙げてください。`,
+    BRIEF_RULES + (moduleId === "esoteric" ? "魂やパーソナリティの光線、意識の段階は判定しないでください。" : ""),
+  ].join("\n\n");
+}
+
+export const buildSinglePrompt = (moduleId: string, body: string, brief = false): string =>
+  `${brief ? briefSinglePromptHead(moduleId) : singlePromptHead(moduleId)}\n\n# 鑑定内容\n${body}`;
 
 /** 誕生日を過ぎているかを含めた満年齢 */
 export function ageOn(birthIso: string, todayIso: string): number {
