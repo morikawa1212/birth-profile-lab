@@ -101,8 +101,8 @@ a.dictionary-link { text-decoration: none; min-height: 44px; padding: 8px 18px; 
 .support-box { margin: 0 0 20px; padding: 0 0 20px; border-bottom: 1px solid currentColor; }
 .support-box h2 { margin: 0 0 6px; font-size: 1.05rem; }
 .support-box p { margin: 0 0 12px; }
-.support-link { display: inline-block; padding: 11px 32px; border-radius: 100px; background: #2882a7; color: #fff; font-weight: 700; text-decoration: none; }
-.support-link:hover { background: #1f6a88; color: #fff; }
+.support-link { display: inline-block; padding: 11px 32px; border-radius: 100px; background: #1f6a88; color: #fff; font-weight: 700; text-decoration: none; }
+.support-link:hover { background: #185870; color: #fff; }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-bottom: 8px; }
 .version { margin: 0; }
 @media (max-width: 480px) {
