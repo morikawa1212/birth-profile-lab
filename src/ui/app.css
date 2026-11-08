@@ -180,9 +180,16 @@ a.dictionary-link { text-decoration: none; min-height: 44px; padding: 8px 18px; 
 .gk-node-activation .gk-circle { stroke: #0b7a86; fill: #e8f4f5; }
 .gk-node-venus .gk-circle { stroke: #a0577a; fill: #f8ecf2; }
 .gk-node-pearl .gk-circle { stroke: #8a7a3a; fill: #f6f2e2; }
-.gk-node-core .gk-circle { stroke: #6b5a5a; fill: url(#gk-core); }
-.gk-stop-pearl { stop-color: #f6f2e2; }
-.gk-stop-venus { stop-color: #f8ecf2; }
+.gk-node-core .gk-circle { stroke: none; fill: url(#gk-core); }
+.gk-node-lw .gk-circle { stroke: none; fill: url(#gk-lw); }
+.gk-node-purpose .gk-circle { stroke: none; fill: url(#gk-purpose); }
+.gk-arc { fill: none; stroke-width: 3; pointer-events: none; }
+.gk-arc-activation { stroke: #0b7a86; }
+.gk-arc-venus { stroke: #a0577a; }
+.gk-arc-pearl { stroke: #8a7a3a; }
+.gk-stop-activation { stop-color: #cfe9ec; }
+.gk-stop-pearl { stop-color: #ece2bd; }
+.gk-stop-venus { stop-color: #f2d7e4; }
 .gk-node.is-selected .gk-circle { fill: #ffe7a8; }
 .gk-node:focus { outline: none; }
 .gk-node:focus-visible .gk-circle { stroke: var(--focus); stroke-width: 4; }
@@ -203,3 +210,4 @@ a.dictionary-link { text-decoration: none; min-height: 44px; padding: 8px 18px; 
   .body-panel .table { grid-template-columns: 1fr; gap: 0; }
   .body-panel .table dd { margin-bottom: 8px; }
 }
+.gk-node:focus-visible .gk-arc { stroke: var(--focus); stroke-width: 4; }

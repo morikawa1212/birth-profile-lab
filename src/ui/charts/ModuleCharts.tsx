@@ -93,9 +93,10 @@ export function VedicChart({ module: m, content }: { module: ModuleResult; conte
  * 遺伝子易経のチャート。スフィアの配置とつながりは一般的なホロジェネティック・プロファイルの並びに合わせ、
  * 図の見た目(色・形・装飾)はこのサイト独自にする。コアと天職は同じ配置なので1つの円で示す。
  */
-type GkPath = "activation" | "venus" | "pearl" | "core";
+/** 2つの道に含まれるスフィアは、両方の色で塗る */
+type GkPath = "activation" | "venus" | "pearl" | "core" | "lw" | "purpose";
 const GK_NODES: readonly { id: string; items: readonly string[]; label: string; x: number; y: number; path: GkPath }[] = [
-  { id: "lifes_work", items: ["lifes_work"], label: "ライフワーク", x: 200, y: 44, path: "activation" },
+  { id: "lifes_work", items: ["lifes_work"], label: "ライフワーク", x: 200, y: 44, path: "lw" },
   { id: "pearl", items: ["pearl"], label: "パール", x: 200, y: 138, path: "pearl" },
   { id: "vocation", items: ["vocation", "core"], label: "天職・コア", x: 133, y: 187, path: "core" },
   { id: "culture", items: ["culture"], label: "文化", x: 267, y: 187, path: "pearl" },
@@ -105,15 +106,30 @@ const GK_NODES: readonly { id: string; items: readonly string[]; label: string; 
   { id: "iq", items: ["iq"], label: "IQ", x: 133, y: 289, path: "venus" },
   { id: "eq", items: ["eq"], label: "EQ", x: 267, y: 289, path: "venus" },
   { id: "attraction", items: ["attraction"], label: "引き寄せ", x: 200, y: 340, path: "venus" },
-  { id: "purpose", items: ["purpose"], label: "目的", x: 200, y: 436, path: "activation" },
+  { id: "purpose", items: ["purpose"], label: "目的", x: 200, y: 436, path: "purpose" },
 ];
-const GK_EDGES: readonly [string, string, Exclude<GkPath, "core">][] = [
+const GK_EDGES: readonly [string, string, "activation" | "venus" | "pearl"][] = [
   ["lifes_work", "evolution", "activation"], ["radiance", "evolution", "activation"], ["radiance", "purpose", "activation"],
   ["purpose", "attraction", "venus"], ["attraction", "iq", "venus"], ["iq", "eq", "venus"], ["eq", "sq", "venus"], ["sq", "vocation", "venus"],
   ["vocation", "culture", "pearl"], ["culture", "pearl", "pearl"], ["pearl", "vocation", "pearl"],
   ["lifes_work", "vocation", "pearl"], ["lifes_work", "pearl", "pearl"], ["lifes_work", "culture", "pearl"],
 ];
 const GK_R = 32;
+/** 2つの道に含まれるスフィアの、左上と右下の色 */
+const SPLIT: Partial<Record<GkPath, readonly ["activation" | "venus" | "pearl", "activation" | "venus" | "pearl"]>> = {
+  core: ["pearl", "venus"], lw: ["activation", "pearl"], purpose: ["activation", "venus"],
+};
+/** 円の縁を斜めに分け、2つの道の色で描く */
+function SplitRing({ x, y, colors }: { x: number; y: number; colors: readonly [string, string] }) {
+  const k = GK_R * Math.SQRT1_2;
+  const tr = `${x + k} ${y - k}`, bl = `${x - k} ${y + k}`;
+  return (
+    <>
+      <path d={`M ${tr} A ${GK_R} ${GK_R} 0 0 0 ${bl}`} class={`gk-arc gk-arc-${colors[0]}`} />
+      <path d={`M ${bl} A ${GK_R} ${GK_R} 0 0 0 ${tr}`} class={`gk-arc gk-arc-${colors[1]}`} />
+    </>
+  );
+}
 
 export function GeneKeysChart({ module: m, content }: { module: ModuleResult; content: ContentMap }) {
   const d = m.data as GeneKeysData;
@@ -132,10 +148,12 @@ export function GeneKeysChart({ module: m, content }: { module: ModuleResult; co
       <h2 id="gk-chart-title">チャート</h2>
       <svg class="gk-chart" viewBox="0 0 400 480" role="img" aria-label={`遺伝子易経のチャート。${label}`}>
         <defs>
-          <linearGradient id="gk-core" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="50%" class="gk-stop-pearl" />
-            <stop offset="50%" class="gk-stop-venus" />
-          </linearGradient>
+          {([["gk-core", "pearl", "venus"], ["gk-lw", "activation", "pearl"], ["gk-purpose", "activation", "venus"]] as const).map(([id, a, b]) => (
+            <linearGradient key={id} id={id} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="50%" class={`gk-stop-${a}`} />
+              <stop offset="50%" class={`gk-stop-${b}`} />
+            </linearGradient>
+          ))}
         </defs>
         <circle cx={200} cy={240} r={196} class="gk-ring" />
         {GK_EDGES.map(([a, b, path]) => <line key={`${a}-${b}`} {...edge(a, b)} class={`gk-edge gk-edge-${path}`} />)}
@@ -148,6 +166,7 @@ export function GeneKeysChart({ module: m, content }: { module: ModuleResult; co
               aria-label={`${name} ${valueOf(n.items[0]!)}`} aria-pressed={selected === n.items[0]}
               onClick={() => setSelected(n.items[0]!)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(n.items[0]!); } }}>
               <circle cx={n.x} cy={n.y} r={GK_R} class="gk-circle" />
+              {SPLIT[n.path] && <SplitRing x={n.x} y={n.y} colors={SPLIT[n.path]!} />}
               <text x={n.x} y={n.y - 10} class="gk-name">{n.label}</text>
               <text x={n.x} y={n.y + 9} class="gk-num">{valueOf(n.items[0]!)}</text>
             </g>
@@ -155,7 +174,7 @@ export function GeneKeysChart({ module: m, content }: { module: ModuleResult; co
         })}
       </svg>
       <p class="note chart-legend">
-        数字は「鍵.ライン」です。<span class="gk-key gk-key-activation">変容活性化の道</span>、<span class="gk-key gk-key-venus">ヴィーナスの道</span>、<span class="gk-key gk-key-pearl">パールの道</span>を線で結んでいます。天職とコアは同じ配置を、それぞれの道の視点で読みます。スフィアを選ぶと、解説を表示します。
+        数字は「鍵.ライン」です。<span class="gk-key gk-key-activation">変容活性化の道</span>、<span class="gk-key gk-key-venus">ヴィーナスの道</span>、<span class="gk-key gk-key-pearl">パールの道</span>を線で結んでいます。2色の円は、2つの道に含まれるスフィアです(ライフワーク、目的、天職・コア)。天職とコアは同じ配置を、それぞれの道の視点で読みます。スフィアを選ぶと、解説を表示します。
       </p>
       {selected && <SelectionPanel module={m} itemId={selected} content={content} />}
     </section>
