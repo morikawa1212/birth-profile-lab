@@ -111,3 +111,6 @@ a.dictionary-link { text-decoration: none; min-height: 44px; padding: 8px 18px; 
   .btn { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+.more-contents { margin: 0 0 20px; padding: 0 0 20px; border-bottom: 1px solid currentColor; }
+.more-contents p { margin: 0 0 6px; }
+.more-contents a { font-weight: 700; }

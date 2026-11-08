@@ -108,6 +108,10 @@ export function App() {
           <p>このサイトは無料で公開しています。役に立ったと感じたら、応援していただけるとうれしいです。OFUSE の登録なしで、金額を選んで送れます。</p>
           <a class="support-link" href="https://ofuse.me/o?uid=107888" target="_blank" rel="noopener noreferrer">応援する</a>
         </section>
+        <aside class="more-contents" aria-label="ほかのコンテンツ">
+          <p>ホメオパシー、フラワーエッセンス、ジェムエリクサー、易経など、ほかの無料コンテンツもあります。</p>
+          <a href="https://morikawatakashi.com/contents/">コンテンツ一覧を見る →</a>
+        </aside>
         <p>入力した生年月日・時刻・出生地は、この端末の中だけで計算します。送信も記録もしません。</p>
         <nav aria-label="サイトの情報">
           <a href="#about">このサイトについて</a>
